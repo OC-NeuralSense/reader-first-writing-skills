@@ -1,0 +1,130 @@
+# Routing Matrix (M4 / Phase 5)
+# PUBLIC FILE -- tracked in git.
+# How an incoming request is routed to a skill or workflow, on which dimensions,
+# how collisions are handled, and worked negative examples.
+# COPYRIGHT/PRIVACY: NO source-card ids, NO book locators, ORIGINAL names only.
+
+meta:
+  produced_by: architecture-designer
+  stage: "M4 / Phase 5"
+  evaluator: routing-evaluator (tool TL-ROUTE) -- deterministic lookup, surfaces collisions, never silently guesses.
+
+routing_dimensions:
+  - id: genre
+    values: [business_analytical, academic, general_explanatory, technical_documentation]
+    role: selects the review-document lens and the shape-and-close defaults; a first-class routing dimension.
+    note: no classifier infers genre yet -- it is an explicit input or an upfront question (open question in the private model).
+    aliases: policy -> business_analytical (a policy memo is a sub-case, not a fifth genre value).
+  - id: audience_expertise
+    values: [novice, mixed, practitioner, expert]
+    role: drives jargon/abstraction depth in adapt-to-reader, draft-prose, review lenses.
+  - id: stage
+    values: [plan, structure, draft, diagnose, revise, evaluate, validate]
+    role: primary selector of which workflow/skill family applies.
+  - id: depth_mode
+    values: [quick, standard, deep, teaching, audit]
+    role: selects intensity and whether independent-reviewer/orchestrator engage.
+  - id: preservation_intent
+    values: [strict, standard, loose]
+    role: sets the fidelity gate strictness and voice envelope in every revisional path.
+  - id: task_mode
+    values: [diagnose_only, revise, evaluate, generate, teach, usage]
+    role: separates "report defects" from "apply changes" from "build new"; usage is a thin correctness-only variant of revise (grammar/punctuation, CAP-37).
+secondary_signals:
+  read_mode: [scanned, linear]        # drives apparatus density (shape-and-close)
+  communicative_aim: [reveal, act]    # drives the close (shape-and-close, review)
+  document_length: [short, long]      # interacts with apparatus and architecture
+
+primary_routes:
+  - when: {stage: plan, task_mode: generate, has_reader_frame: false}
+    route_to: WF-PLAN
+    entry: frame-the-brief
+  - when: {intent: "who is the reader / what do they know"}
+    route_to: SK-FRAME
+  - when: {intent: "notes/topic -> structured argument or answer-first outline", task_mode: generate}
+    route_to: SK-ARGUE
+  - when: {intent: "do these support the conclusion / find unsupported claims", task_mode: evaluate}
+    route_to: SK-TEST-ARG
+  - when: {intent: "draft prose from approved outline", stage: draft}
+    route_to: SK-DRAFT
+  - when: {intent: "what's wrong with this draft", task_mode: diagnose_only, depth_mode: [quick, standard]}
+    route_to: SK-DIAGNOSE
+    then: WF-REVISE or WF-RESTRUCTURE per defect layer
+  - when: {intent: "fix the structure", stage: revise, defect_layer: structure}
+    route_to: WF-RESTRUCTURE
+  - when: {intent: "fix flow/clarity/length/thinness", stage: revise, defect_layer: prose}
+    route_to: WF-REVISE
+    task_mode_map: {cohere: fix-flow, clarify: clearer-sentences, compress: cut-down, expand: expand-thin}
+  - when: {intent: "fix grammar / settle punctuation only", task_mode: usage}
+    route_to: SK-REVISE-PROSE
+    task_mode: usage
+    note: lightweight correctness-only path (CAP-37) -- a trivial usage fix does not require a full review-document pass; fidelity still strict, no claim changed.
+  - when: {intent: "rewrite for a different audience / simplify keeping precision", task_mode: revise}
+    route_to: SK-ADAPT
+  - when: {intent: "how much signposting / how should this end", stage: plan_or_evaluate}
+    route_to: SK-SHAPE-CLOSE
+  - when: {intent: "what changed / better? / dropped caveats? / why better", task_mode: evaluate, versions: 2}
+    route_to: SK-COMPARE
+  - when: {intent: "review this <genre> document", task_mode: evaluate, depth_mode: [standard, deep]}
+    route_to: SK-REVIEW
+    genre_lens:
+      business_analytical: answer-first / real-recommendation / calibrated-close lens
+      academic: inferential-soundness / evidence-fit / fair-counterposition lens
+      general_explanatory: reader-comprehension / explanatory-clarity lens (no recommendation to argue)
+      technical_documentation: step-completeness / preserved-precision / navigation lens
+    policy_note: a policy memo is not its own genre -- route it to the business_analytical lens.
+  - when: {intent: "is this ready to ship", depth_mode: audit}
+    route_to: WF-FINALIZE
+  - when: {intent: "thorough multi-perspective review", depth_mode: deep}
+    route_to: WF-DEEP-REVIEW
+  - when: {intent: "just a fast once-over", depth_mode: quick}
+    route_to: WF-QUICK
+  - when: {intent: "teach me / walk me through so I learn", task_mode: teach, depth_mode: teaching}
+    route_to: WF-TEACH
+
+depth_mode_defaults:
+  quick: WF-QUICK / SK-DIAGNOSE(quick) -- explicitly non-exhaustive
+  standard: single-skill or single-plane workflow
+  deep: WF-DEEP-REVIEW (orchestrator + independent reviewers)
+  teaching: WF-TEACH
+  audit: WF-FINALIZE
+
+collision_handling:
+  rule: >-
+    routing-evaluator returns all comparable-strength candidates rather than
+    picking one. Disambiguation order: (1) explicit stage/task_mode wins;
+    (2) if a defect layer is known, structure defects -> restructure, prose
+    defects -> revise; (3) if depth is unstated, default to standard, never deep;
+    (4) if genre is required (review/shape-close) and absent, ASK -- do not
+    assume; (5) if still tied, surface the choice to the user.
+  missing_signal_defaults:
+    reader_frame_absent: run SK-FRAME first (most common clarification trigger)
+    genre_absent_for_review: ask; do not infer
+    read_mode_absent_for_apparatus: ask scanned vs linear
+    preservation_intent_absent: default strict for technical/academic, standard otherwise
+    depth_absent: default standard
+
+negative_examples:
+  - request: "This paragraph doesn't flow."
+    do_not: route to WF-RESTRUCTURE by default
+    do: route to WF-REVISE (cohere); escalate to restructure ONLY if diagnose-draft flags the incoherence as a structural symptom.
+  - request: "Give it a once-over and tell me it's ready to ship."
+    do_not: satisfy with WF-QUICK
+    do: quick and audit are different contracts -- a ship decision requires WF-FINALIZE; a quick pass may NOT masquerade as a quality gate.
+  - request: "Make this shorter."
+    do_not: drop hedges/qualifiers to hit the length
+    do: SK-COMPRESS mode under WF-REVISE with the fidelity gate; qualifiers are retained.
+  - request: "Simplify this for a lay reader."
+    do_not: route to SK-REVISE-PROSE (same-reader clarity)
+    do: "route to SK-ADAPT (audience change) with technical_precision anchored."
+  - request: "Review my draft. (genre unstated)"
+    do_not: pick a genre lens silently
+    do: ask which genre / document type before selecting the review lens.
+  - request: "Cluster these and tell me the order."
+    do_not: create two skills' worth of routing
+    do: SK-ARGUE handles grouping + ordering as one activation (they are subroutines, not separate skills).
+  - request: "The clearest order breaks my logic -- which wins?"
+    do_not: default to "structure wins" or "prose wins"
+    do: "enter the arbitration gate (WF-REVISE v3): try a both-satisfying rewrite; reject meaning-altering fixes; escalate a genuine unresolved same-passage conflict (Q9), never decide by fiat."
+
+attestation: "no source prose copied; no card ids in public files"

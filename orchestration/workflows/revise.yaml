@@ -1,0 +1,114 @@
+# Canonical Workflow Spec -- revise (WF-REVISE)
+# PUBLIC, provider-neutral source of truth. Platform adapters are generated from this.
+# Handoff names resolve against handoff-contracts.yaml; gate ids against quality-gates.yaml.
+# COPYRIGHT/PRIVACY: original wording only; no concept-card ids; no book locators.
+
+name: revise
+description: >-
+  Fix sentence- and paragraph-level prose -- flow, clarity, length, or thinness --
+  without changing meaning. Diagnose the prose defect (watching for structural
+  symptoms), apply the repair by task mode, reconcile any structure-versus-prose
+  collision, then confirm no meaning or qualifier was lost.
+depth: standard
+
+triggers:
+  - "Fix the flow."
+  - "Make these sentences clearer."
+  - "Cut this down without losing anything important."
+  - "This part is too thin -- expand it."
+non_triggers:
+  - "The fault is structural -> restructure."
+  - "Recalibrating for a different audience -> adapt-to-reader."
+
+inputs:
+  required:
+    - passage
+  optional:
+    - reader-frame
+    - task_mode
+    - target_length
+
+stages:
+  - id: v1
+    responsibility: >-
+      Diagnose the prose defect and detect whether an apparent local incoherence
+      is really a missing structural link.
+    execution:
+      type: skill
+      component: diagnose-draft
+    depends_on: []
+    parallel_with: []
+    input_contract: none
+    output_contract: defect-report
+    gate: none
+    on_failure: return the finding
+    on_ambiguity: if incoherence may be a structural gap, flag it for escalation
+
+  - id: v2
+    responsibility: >-
+      Apply the sentence/paragraph repair for the requested task mode (cohere,
+      clarify, compress, expand, usage) without adding a relation the text lacks.
+    execution:
+      type: skill
+      component: revise-prose
+    depends_on: [v1]
+    parallel_with: []
+    input_contract: defect-report
+    output_contract: change-report
+    gate: none
+    on_failure: try an alternative construction
+    on_ambiguity: attempt a both-satisfying rewrite first
+
+  - id: v3
+    responsibility: >-
+      Reconcile any structure-versus-prose collision on the same passage; either
+      produce a rewrite that satisfies both planes or escalate the trade-off.
+    execution:
+      type: human-check   # agent in deep mode
+      component: cross-plane arbitration step
+    depends_on: [v2]
+    parallel_with: []
+    input_contract: change-report
+    output_contract: change-report
+    gate: GATE-ROUTING
+    on_failure: reject a meaning-altering fix under fidelity
+    on_ambiguity: escalate the unresolved same-passage conflict; prose-to-structure escalation may route to restructure
+
+  - id: v4
+    responsibility: >-
+      Confirm propositional meaning is preserved and no caveat, hedge, role, or
+      referent was dropped.
+    execution:
+      type: tool
+      component: revision-comparator
+    depends_on: [v3]
+    parallel_with: []
+    input_contract: change-report
+    output_contract: change-report
+    gate: GATE-FIDELITY
+    on_failure: fidelity rollback -> v2
+    on_ambiguity: escalate to independent-reviewer
+
+completion_conditions:
+  - relation between adjacent sentences inferable
+  - topic continuity holds
+  - meaning and qualifiers preserved
+failure_conditions:
+  - a connective that misstates the real relation
+  - papering over a structural gap with prose
+  - a rewrite that inverts a role or drops a referent
+quality_metrics:
+  - coherence-marker coverage
+  - qualifier-set equality
+  - referents resolvable
+
+notes:
+  loops:
+    - fidelity rollback: v4 blocks -> v2; exit is a passing fidelity gate (terminal)
+  escalations:
+    - v1/v3 prose-to-structure -> restructure (transition, not a new workflow)
+    - v4 residual role/sense doubt -> independent-reviewer
+  terminal: v4
+  reachable_completion: true
+
+attestation: "no source prose copied; no card ids in public files"

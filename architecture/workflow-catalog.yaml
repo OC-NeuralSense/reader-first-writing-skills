@@ -1,0 +1,445 @@
+# Workflow Catalog (M4 / Phase 5)
+# PUBLIC FILE -- tracked in git.
+# A workflow exists where there is a real multi-step sequence with
+# dependencies, branching, validation, or handoffs. Single-skill invocations
+# are NOT workflows.
+# COPYRIGHT/PRIVACY: NO source-card ids, NO book locators, ORIGINAL names only.
+
+meta:
+  produced_by: architecture-designer
+  stage: "M4 / Phase 5"
+  execution_types: [skill, agent, tool, human-check]
+  loop_note: >-
+    Loops mirror the private lifecycle feedback loops: structure-gate (diagnose
+    -> re-architect), prose-to-structure escalation, prose-revision loop,
+    reader-model refresh, and fidelity rollback. They are expressed as
+    on_failure / on_ambiguity transitions, not as extra stages.
+  depth_semantics: >-
+    depth changes machinery, never verbosity. For a GENERATIVE skill or workflow
+    (e.g. build-argument, plan-document), "deep" means added analysis passes and
+    validation stages, not a longer answer: the faithful-summary / soundness /
+    completeness judgments are routed to an isolated independent reviewer and an
+    extra validation pass is inserted before the gate. A "deep" run must therefore
+    add a real stage or an independent-review handoff; if it would only produce
+    more prose at the same rigor, "deep" does not apply and standard is used.
+  counts:
+    workflows_total: 8
+
+workflows:
+
+  - id: WF-QUICK
+    name: quick-pass
+    depth: quick
+    trigger: "Just give it a fast once-over."
+    non_trigger: "Anything asking for a thorough, exhaustive, or ship-ready review -> deep-review / finalize."
+    stages:
+      - id: q1
+        responsibility: infer a light reader-frame if one is cheaply available
+        execution: skill
+        component: frame-the-brief
+        depends_on: []
+        input_contract: draft (+ any audience hints)
+        output_contract: reader-frame (partial, optional)
+        gate: none
+        on_failure: proceed without a frame
+        on_ambiguity: proceed; do not block a fast pass on audience facts
+      - id: q2
+        responsibility: surface top surface defects + single most visible structural risk
+        execution: skill
+        component: diagnose-draft (quick)
+        depends_on: [q1]
+        parallel_with: []
+        input_contract: draft, partial reader-frame
+        output_contract: defect-report (non-exhaustive)
+        gate: none
+        on_failure: return what was found
+        on_ambiguity: note the risk, do not deep-dive
+      - id: q3
+        responsibility: apply the highest-value surface fixes only
+        execution: skill
+        component: revise-prose (quick)
+        depends_on: [q2]
+        input_contract: defect-report (surface subset)
+        output_contract: revised_passage, change-report
+        gate: meaning-preservation (light)
+        on_failure: leave the passage, report the issue
+        on_ambiguity: skip the change, flag it
+    completion_conditions: [top surface defects fixed, most visible structural risk noted, non-exhaustiveness stated]
+    failure_conditions: [presenting the quick pass as a full quality gate]
+    quality_metrics: [surface-fix count, structural-risk flagged y/n, exhaustiveness-disclaimer present]
+
+  - id: WF-PLAN
+    name: plan-document
+    depth: standard   # supports quick and deep
+    trigger: "Help me plan this whole report before I write."
+    non_trigger: "A draft already exists and needs assessment -> diagnose-draft / review-document."
+    stages:
+      - id: p1
+        responsibility: fix reader, situation, aim, genre
+        execution: skill
+        component: frame-the-brief
+        depends_on: []
+        input_contract: brief, audience hints
+        output_contract: reader-frame
+        gate: reader-frame completeness (prior-knowledge, standing-question, expertise, aim present)
+        on_failure: request clarification
+        on_ambiguity: ask the audience question (most common clarification trigger); bias to assuming too little
+      - id: p2
+        responsibility: build the validated answer-first argument structure
+        execution: skill
+        component: build-argument
+        depends_on: [p1]
+        input_contract: reader-frame, notes/claims/topic
+        output_contract: argument-blueprint
+        gate: structure-validity (outline-validator warnings resolved)
+        on_failure: loop back to p2 (re-group/re-order) [structure-gate loop]
+        on_ambiguity: surface competing governing questions; ask which to serve
+      - id: p3
+        responsibility: confirm claims genuinely support the conclusion
+        execution: skill
+        component: test-argument
+        depends_on: [p2]
+        input_contract: argument-blueprint
+        output_contract: defect-report (soundness)
+        gate: argument-soundness (no unflagged non-sequitur / empty topper)
+        on_failure: return to p2
+        on_ambiguity: mark the inference type (chain vs class) as unresolved
+      - id: p4
+        responsibility: set apparatus density and design the closing for genre and aim
+        execution: skill
+        component: shape-and-close
+        depends_on: [p3]
+        parallel_with: []
+        input_contract: argument-blueprint, genre, length, read_mode, aim
+        output_contract: apparatus_density_recommendation, closing_design, section/paragraph map
+        gate: each proposed heading carries a real claim; apparatus value present
+        on_failure: return an apparatus warning
+        on_ambiguity: ask read-mode (scanned vs linear); leave signpost density / close as ratifiable parameters
+    completion_conditions: [every planned section references a hierarchy node, apparatus density set, soundness gate passed]
+    failure_conditions: [sections invented that no claim supports, apparatus set without reference to genre/read-mode, planning before the reader-frame is settled]
+    quality_metrics: [node coverage of sections, soundness gate pass, apparatus-density value present]
+
+  - id: WF-COMPOSE
+    name: compose
+    depth: standard   # supports deep
+    trigger: "Write me a document from these notes / draft a full report from this brief."
+    non_trigger: "Only wants the plan, not the prose -> plan-document (WF-PLAN is plan-only). A draft already exists -> revise / restructure."
+    stages:
+      - id: c1
+        responsibility: fix reader, situation, aim, genre
+        execution: skill
+        component: frame-the-brief
+        depends_on: []
+        input_contract: brief, audience hints
+        output_contract: reader-frame
+        gate: none
+        on_failure: request clarification
+        on_ambiguity: ask the audience question; bias to assuming too little
+      - id: c2
+        responsibility: build the validated answer-first argument structure
+        execution: skill
+        component: build-argument
+        depends_on: [c1]
+        input_contract: reader-frame, notes/claims/topic
+        output_contract: argument-blueprint
+        gate: structure-validity (GATE-STRUCTURE)
+        on_failure: loop back to c2 (re-group/re-order) [structure-gate loop]
+        on_ambiguity: surface competing governing questions; ask which to serve
+      - id: c3
+        responsibility: confirm claims genuinely support the conclusion before drafting
+        execution: skill
+        component: test-argument
+        depends_on: [c2]
+        input_contract: argument-blueprint
+        output_contract: defect-report (soundness)
+        gate: argument-soundness (GATE-SOUNDNESS)
+        on_failure: return to c2 [soundness loop]
+        on_ambiguity: mark inference type (chain vs class) unresolved
+      - id: c4
+        responsibility: draft continuous prose from the validated blueprint, dash-free
+        execution: skill
+        component: draft-prose
+        depends_on: [c3]
+        input_contract: argument-blueprint, reader-frame
+        output_contract: draft_prose (no handoff schema; raw revisable prose)
+        gate: none
+        on_failure: return to c2 if a node cannot be drafted without inventing support
+        on_ambiguity: keep jargon inside the reader's vocabulary; flag any gap
+      - id: c5
+        responsibility: revise the prose pass without changing meaning; confirm no qualifier dropped
+        execution: skill
+        component: revise-prose
+        depends_on: [c4]
+        input_contract: draft prose, reader-frame
+        output_contract: change-report
+        gate: meaning-preservation/fidelity (GATE-FIDELITY)
+        on_failure: reject a meaning-altering edit; fidelity rollback re-drafts under c5
+        on_ambiguity: escalate the unresolved same-passage case; prose-to-structure may route to restructure
+      - id: c6
+        responsibility: set apparatus density and design the closing for genre and aim; dash-free house style
+        execution: skill
+        component: shape-and-close
+        depends_on: [c5]
+        input_contract: argument-blueprint, genre, length, read_mode, aim
+        output_contract: apparatus_density_recommendation, closing_design, section/paragraph map
+        gate: each heading carries a real claim; apparatus value present
+        on_failure: return an apparatus warning
+        on_ambiguity: ask read-mode (scanned vs linear); leave signpost density / close as ratifiable parameters
+      - id: c7
+        responsibility: deep-depth only -- independent-review reconciliation before shipping a generated document
+        execution: agent
+        component: review-orchestrator
+        depends_on: [c6]
+        input_contract: shaped document, reader-frame
+        output_contract: defect-report (reconciled)
+        gate: argument-soundness (GATE-SOUNDNESS)
+        on_failure: route each blocking defect to its owning stage (c2 structure, c5 prose)
+        on_ambiguity: escalate the unresolved same-passage conflict; request preservation_intent if unstated
+        note: standard depth skips c7 (c6 terminal); audit depth hands off to WF-FINALIZE rather than adding a release gate here.
+    completion_conditions: [reader-frame settled first, structure and soundness gates passed before drafting, every blueprint node drafted with no invented claim, meaning and qualifiers preserved under fidelity, apparatus set for genre and read-mode, draft dash-free in the expert-human register]
+    failure_conditions: [drafting before the soundness gate passes, prose that adds a claim the blueprint lacks, a revision that inverts a role or drops a referent, a dash surviving into the draft]
+    quality_metrics: [node coverage of drafted prose, soundness gate pass before drafting, qualifier-set equality across revision, apparatus-density value present, dash-free draft]
+
+  - id: WF-RESTRUCTURE
+    name: restructure
+    depth: standard   # supports deep
+    trigger: "Fix the structure of this document."
+    non_trigger: "Only sentence flow reads wrong -> revise. Only wants a diagnosis -> diagnose-draft."
+    stages:
+      - id: r1
+        responsibility: locate and name the structural defect
+        execution: skill
+        component: diagnose-draft (structure lens)
+        depends_on: []
+        input_contract: draft/outline, reader-frame
+        output_contract: defect-report (structure)
+        gate: none
+        on_failure: escalate to deep-review if no defect reproduces
+        on_ambiguity: run test-argument to confirm the fault is logical
+      - id: r2
+        responsibility: verify the logical fault before repair
+        execution: skill
+        component: test-argument
+        depends_on: [r1]
+        input_contract: argument-blueprint, defect-report
+        output_contract: defect-report (soundness, confirmed)
+        gate: argument-soundness
+        on_failure: return; the reported fault may be prose, route to revise
+        on_ambiguity: mark inference type unresolved
+      - id: r3
+        responsibility: repair by re-grouping/re-ordering/re-summarizing/cutting
+        execution: skill
+        component: revise-structure
+        depends_on: [r2]
+        input_contract: confirmed defect-report, argument-blueprint
+        output_contract: revised_structure, change-report
+        gate: none
+        on_failure: try an alternative repair
+        on_ambiguity: when repairs trade off and stakes are high, present options for a ruling
+      - id: r4
+        responsibility: confirm meaning held constant across the repair
+        execution: tool
+        component: revision-comparator
+        depends_on: [r3]
+        input_contract: pre and post structure
+        output_contract: meaning-preservation warnings (claim/qualifier set delta)
+        gate: meaning-preservation/fidelity
+        on_failure: fidelity rollback -> return to r3
+        on_ambiguity: escalate to independent-reviewer for role/sense judgment
+      - id: r5
+        responsibility: re-run the soundness test on the repaired structure
+        execution: skill
+        component: test-argument
+        depends_on: [r4]
+        input_contract: revised_structure
+        output_contract: defect-report (soundness, clean)
+        gate: argument-soundness
+        on_failure: loop to r3
+        on_ambiguity: n/a
+    completion_conditions: [named defect no longer reproduces, pre/post claim set identical, soundness re-test passes]
+    failure_conditions: [a fix that silently changes what the document claims]
+    quality_metrics: [defect-reproduction=false, claim-set equality=true, soundness re-test pass]
+
+  - id: WF-REVISE
+    name: revise
+    depth: standard
+    trigger: ["Fix the flow.", "Make these sentences clearer.", "Cut this down.", "Expand this thin part."]
+    non_trigger: "The fault is structural -> restructure. Recalibrating audience -> adapt-to-reader."
+    stages:
+      - id: v1
+        responsibility: diagnose the prose defect and detect structural symptoms
+        execution: skill
+        component: diagnose-draft (prose lens)
+        depends_on: []
+        input_contract: passage, reader-frame
+        output_contract: defect-report (prose), structural-symptom flag
+        gate: none
+        on_failure: return
+        on_ambiguity: if incoherence may be a missing structural link, flag for escalation
+      - id: v2
+        responsibility: apply the sentence/paragraph repair by task_mode
+        execution: skill
+        component: revise-prose
+        depends_on: [v1]
+        input_contract: defect-report (prose), task_mode
+        output_contract: revised_passage, change-report
+        gate: none
+        on_failure: try an alternative construction
+        on_ambiguity: attempt a both-satisfying rewrite first (arbitration step 1)
+      - id: v3
+        responsibility: reconcile any structure-vs-prose collision
+        execution: human-check   # or agent in deep mode
+        component: arbitration gate (folded CAP-11)
+        depends_on: [v2]
+        input_contract: passage, structural requirement type, meaning to preserve
+        output_contract: reconciled rewrite OR escalation flag with trade-off
+        gate: routing-correctness + fidelity
+        on_failure: reject a meaning-altering fix under fidelity
+        on_ambiguity: escalate the genuine unresolved same-passage conflict (Q9), do not silently pick a plane; prose-to-structure escalation may route to restructure
+      - id: v4
+        responsibility: confirm meaning preserved and no caveat dropped
+        execution: tool
+        component: revision-comparator
+        depends_on: [v3]
+        input_contract: original, revised
+        output_contract: change-report (meaning + qualifier delta)
+        gate: meaning-preservation/fidelity
+        on_failure: fidelity rollback -> v2
+        on_ambiguity: escalate to independent-reviewer
+    completion_conditions: [relation between adjacent sentences inferable, topic continuity holds, meaning + qualifiers preserved]
+    failure_conditions: [a connective that misstates the relation, papering a structural gap, a rewrite that inverts a role or drops a referent]
+    quality_metrics: [coherence-marker coverage, qualifier-set equality, referents resolvable]
+
+  - id: WF-DEEP-REVIEW
+    name: deep-review
+    depth: deep
+    trigger: "Do a thorough, multi-perspective review."
+    non_trigger: "A fast once-over -> quick-pass. Single-lens assessment -> review-document."
+    stages:
+      - id: d1
+        responsibility: decompose the review into independent lenses
+        execution: agent
+        component: review-orchestrator
+        depends_on: []
+        input_contract: document, reader-frame, genre, aim, preservation_intent
+        output_contract: lens assignments {structure, prose, soundness_and_reader_fit}
+        gate: none
+        on_failure: fall back to single-context review-document
+        on_ambiguity: request preservation_intent / acceptance thresholds if unstated
+      - id: d2
+        responsibility: run each lens blind and in parallel
+        execution: agent
+        component: independent-reviewer (xN)
+        depends_on: [d1]
+        parallel_with: [d2]   # sibling instances run concurrently in isolated contexts
+        input_contract: document, reader-frame, single lens
+        output_contract: defect-report (single lens, independent=true)
+        gate: coverage of the assigned lens
+        on_failure: re-run the failed lens
+        on_ambiguity: reviewer flags, does not guess
+      - id: d3
+        responsibility: reconcile findings; surface conflicts; arbitrate same-passage cases
+        execution: agent
+        component: review-orchestrator
+        depends_on: [d2]
+        input_contract: all single-lens defect-reports
+        output_contract: merged defect-report + arbitration_escalations
+        gate: routing-correctness (every escalation logged; no conflict averaged away)
+        on_failure: request a re-review of the disputed passage
+        on_ambiguity: escalate unresolved same-passage structure-vs-prose conflict (Q9) with the trade-off stated
+    completion_conditions: [structure/prose/soundness layers each covered, independent findings reconciled, conflicts surfaced not averaged]
+    failure_conditions: [a single perspective masquerading as multi-perspective, unresolved same-passage conflicts silently decided]
+    quality_metrics: [layer coverage=3/3, escalations logged, reviewer-independence=true]
+
+  - id: WF-FINALIZE
+    name: finalize
+    depth: audit
+    trigger: "Is this ready to ship?"
+    non_trigger: "Still drafting or restructuring -> plan / restructure / revise."
+    stages:
+      - id: f1
+        responsibility: genre-lens quality judgment
+        execution: skill
+        component: review-document (audit, genre-routed)
+        depends_on: []
+        input_contract: near-final document, reader-frame, genre, aim
+        output_contract: defect-report (blocking vs non-blocking)
+        gate: holistic-quality (comprehension, credibility, soundness, correctness)
+        on_failure: route blocking defects to their owning stage
+        on_ambiguity: request acceptance thresholds if unstated
+      - id: f2
+        responsibility: confirm meaning-preservation across all prior edits
+        execution: tool
+        component: revision-comparator
+        depends_on: [f1]
+        input_contract: original vs near-final
+        output_contract: meaning + qualifier delta warnings
+        gate: meaning-preservation/fidelity
+        on_failure: block; fidelity rollback to owning stage
+        on_ambiguity: independent-reviewer for residual role/sense judgment
+      - id: f3
+        responsibility: settle disputed usage/punctuation and check copyright safety
+        execution: tool
+        component: source-overlap-guard + review-document usage check
+        depends_on: [f2]
+        input_contract: near-final document, any protected source excerpts
+        output_contract: usage warnings, source/card-id overlap warnings
+        gate: release (usage settled; no protected-source or card-id overlap)
+        on_failure: block release; fix flagged spans
+        on_ambiguity: distinguish grammar from register; ungrammaticality from ambiguity
+      - id: f4
+        responsibility: lock apparatus density to genre and release
+        execution: human-check
+        component: release gate (CAP-10)
+        depends_on: [f3]
+        input_contract: cleared document
+        output_contract: go / no-go with blocking defects listed
+        gate: release
+        on_failure: no-go; list blocking defects
+        on_ambiguity: late defect re-enters at its owning stage
+    completion_conditions: [blocking vs non-blocking separated, meaning-preservation confirmed, usage settled, apparatus locked]
+    failure_conditions: [shipping with an unresolved soundness or meaning defect, passing a fluent-but-unsound document]
+    quality_metrics: [blocking-defect count=0 at go, meaning-preservation pass, usage/apparatus checks pass]
+
+  - id: WF-TEACH
+    name: teach
+    depth: teaching
+    trigger: "Walk me through improving this so I learn to do it myself."
+    non_trigger: "Just wants the document fixed -> revise / restructure."
+    stages:
+      - id: t1
+        responsibility: diagnose the learner draft, naming each defect + its test
+        execution: skill
+        component: diagnose-draft
+        depends_on: []
+        input_contract: learner draft, learner level, reader-frame
+        output_contract: defect-report with tests
+        gate: none
+        on_failure: re-scope to the learner's level
+        on_ambiguity: ask the learner's current skill level
+      - id: t2
+        responsibility: stage the guided revision, each move = defect + test + rationale
+        execution: skill
+        component: teach-revision
+        depends_on: [t1]
+        input_contract: defect-report with tests
+        output_contract: staged revision with rationale per step
+        gate: each step re-appliable by the learner unaided
+        on_failure: simplify the step
+        on_ambiguity: present a valid alternative form, never one-true-form
+        note: t2 consumes t1's defect-report and does NOT re-diagnose -- it teaches from the faults t1 already found, so the three stages stay non-redundant.
+      - id: t3
+        responsibility: explain why each revision lowered reader effort
+        execution: skill
+        component: compare-versions
+        depends_on: [t2]
+        input_contract: original, revised, change set
+        output_contract: change-report with per-change reader-effect rationale
+        gate: none
+        on_failure: attach the missing rationale
+        on_ambiguity: n/a
+    completion_conditions: [each step names defect + test + rationale, learner could re-apply the test]
+    failure_conditions: [fixes applied silently, overwhelming the learner, prescribing one form as the only correct one]
+    quality_metrics: [steps with complete defect/test/rationale fields, learner-reapplicability]
+
+attestation: "no source prose copied; no card ids in public files"

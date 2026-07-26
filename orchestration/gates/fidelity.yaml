@@ -1,0 +1,27 @@
+name: meaning-preservation / fidelity
+id: GATE-FIDELITY
+supreme: true
+purpose: >-
+  Guarantee that any transformation leaves propositional meaning, participant
+  roles, references, and every qualifier intact.
+applies_after: revise-prose, revise-structure, adapt-to-reader, compress, expand
+owner: any transformation (revise, adapt, compress, expand)
+indicators_from: [revision-comparator]
+pass_criteria:
+  - propositional meaning, participant roles, and references are unchanged
+  - every qualifier, hedge, scope limit, and condition present before is present after
+  - technical terms retain their exact sense, with no silent narrowing or widening
+  - no referent is orphaned and no agent/patient role is inverted
+  - the change stays within the declared preservation intent and voice envelope
+fail_action: >-
+  fidelity rollback -- revert or redo while preserving sense; never silently reword
+  to force a pass.
+severity: blocking
+supremacy_note: >-
+  This gate is SUPREME and overrides every other resolution. If satisfying both
+  the structure and prose planes would alter meaning, neither plane wins: the
+  passage is escalated for re-planning rather than decided by fiat.
+note: >-
+  No gate encodes "structure beats prose." Comprehension is the supreme criterion,
+  meaning is never altered, and this fidelity gate outranks the structure,
+  soundness, clarity, routing, and release gates whenever they conflict.

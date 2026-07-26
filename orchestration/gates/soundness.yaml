@@ -1,0 +1,20 @@
+name: argument soundness
+id: GATE-SOUNDNESS
+purpose: >-
+  Verify each inferential link genuinely holds and that no styling change created
+  or masked a logical defect.
+applies_after: test-argument, review-document
+owner: test-argument / review-document
+indicators_from: [outline-validator]
+pass_criteria:
+  - each parent-child link genuinely follows, so no non-sequitur passes
+  - no true-but-irrelevant support is accepted as load-bearing
+  - overclaims, anecdote-as-trend, and false-dichotomy patterns are flagged
+  - counter-evidence is handled fairly, not by demolishing alternatives
+  - prose-plane edits neither created nor repaired a logical defect
+fail_action: return to structure repair; soundness is judged independently of styling
+severity: blocking
+independent_review: recommended at deep depth, since self-review misses subtle overclaims
+note: >-
+  The FIDELITY gate is supreme and overrides every other resolution; a soundness
+  repair may not proceed by altering meaning.

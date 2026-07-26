@@ -1,0 +1,104 @@
+# Canonical Workflow Spec -- deep-review (WF-DEEP-REVIEW)
+# PUBLIC, provider-neutral source of truth. Platform adapters are generated from this.
+# Handoff names resolve against handoff-contracts.yaml; gate ids against quality-gates.yaml.
+# COPYRIGHT/PRIVACY: original wording only; no concept-card ids; no book locators.
+
+name: deep-review
+description: >-
+  A thorough, multi-perspective review. An orchestrator decomposes the document
+  into independent lenses, spawns blind single-lens reviewers that run in
+  isolated contexts, then reconciles their findings into one layered report --
+  surfacing conflicts rather than averaging them and logging every escalation.
+depth: deep
+
+triggers:
+  - "Do a thorough, multi-perspective review."
+  - "Review this from several independent angles."
+  - "I want more than one reviewer on this."
+non_triggers:
+  - "A fast once-over -> quick-pass."
+  - "A single-lens assessment -> review-document."
+
+inputs:
+  required:
+    - document
+    - reader-frame
+  optional:
+    - genre
+    - communicative_aim
+    - preservation_intent
+    - acceptance_thresholds
+
+stages:
+  - id: d1
+    responsibility: >-
+      Decompose the review into independent lenses (structure, prose,
+      soundness-and-reader-fit) and hand each reviewer only the document, the
+      reader-frame, and its single lens.
+    execution:
+      type: agent
+      component: review-orchestrator
+    depends_on: []
+    parallel_with: []
+    input_contract: reader-frame
+    output_contract: reader-frame
+    gate: none
+    on_failure: fall back to a single-context review-document pass
+    on_ambiguity: request preservation_intent / acceptance thresholds if unstated
+
+  - id: d2
+    responsibility: >-
+      Run each assigned lens blind and in isolation; one agent definition is
+      instantiated once per lens, and the instances execute concurrently in
+      separate contexts. Reviewers report; they do not rewrite.
+    execution:
+      type: agent
+      component: independent-reviewer
+    depends_on: [d1]
+    parallel_with: []   # sibling lens instances of this same stage run concurrently in isolated contexts
+    input_contract: reader-frame
+    output_contract: defect-report
+    gate: per-lens coverage (GATE-STRUCTURE / GATE-CLARITY / GATE-SOUNDNESS by assigned lens)
+    on_failure: re-run the failed lens
+    on_ambiguity: reviewer flags the uncertainty; it does not guess
+
+  - id: d3
+    responsibility: >-
+      Reconcile the single-lens findings into one merged report, surface every
+      conflict, and arbitrate same-passage cases -- never averaging a conflict away.
+    execution:
+      type: agent
+      component: review-orchestrator
+    depends_on: [d2]
+    parallel_with: []
+    input_contract: defect-report
+    output_contract: defect-report
+    gate: GATE-ROUTING
+    on_failure: request a re-review of the disputed passage
+    on_ambiguity: escalate the unresolved same-passage structure-vs-prose conflict with the trade-off stated
+
+completion_conditions:
+  - structure, prose, and soundness layers each covered
+  - independent findings reconciled into one report
+  - conflicts surfaced, not averaged
+failure_conditions:
+  - a single perspective masquerading as multi-perspective
+  - unresolved same-passage conflicts silently decided
+quality_metrics:
+  - layer coverage = 3/3
+  - escalations logged
+  - reviewer-independence = true
+
+notes:
+  parallelism: >-
+    d2 is one agent definition spawned N times (one per lens); the instances run
+    in parallel isolated contexts. On a sequential platform the orchestrator
+    collapses into the d1/d3 workflow driver and the lenses run in turn -- same
+    graph, no extra workflow.
+  loops:
+    - d2 lens failure -> re-run that lens; exit is full lens coverage advancing to d3
+    - d3 disputed passage -> re-review; exit is a passing routing gate (terminal)
+  terminal: d3
+  reachable_completion: true
+
+attestation: "no source prose copied; no card ids in public files"

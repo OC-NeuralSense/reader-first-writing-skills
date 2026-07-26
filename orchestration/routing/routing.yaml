@@ -1,0 +1,175 @@
+# Routing specification (canonical)
+# Machine-readable mirror of the routing matrix. A deterministic lookup selects a
+# skill or workflow from the signal set, surfaces collisions rather than guessing,
+# and asks for a missing genre before choosing any review lens.
+# COPYRIGHT/PRIVACY: original wording only; no source-card ids; no book locators.
+
+meta:
+  purpose: >-
+    Route an incoming request to one skill or workflow on explicit signals,
+    surface ambiguity, and never infer a genre that was not supplied.
+  evaluator: routing-evaluator -- deterministic lookup that returns all
+    comparable-strength candidates instead of silently picking one.
+
+routing_dimensions:
+  - id: genre
+    values: [business_analytical, academic, general_explanatory, technical_documentation]
+    role: selects the review lens and the shaping defaults; a first-class dimension.
+    supplied_by: explicit input or an upfront question; no classifier infers it.
+    aliases:
+      policy: business_analytical
+  - id: audience_expertise
+    values: [novice, mixed, practitioner, expert]
+    role: drives jargon and abstraction depth in adaptation, drafting, and review.
+  - id: stage
+    values: [plan, structure, draft, diagnose, revise, evaluate, validate]
+    role: primary selector of which workflow or skill family applies.
+  - id: depth_mode
+    values: [quick, standard, deep, teaching, audit]
+    role: sets intensity and whether independent reviewers or an orchestrator engage.
+  - id: preservation_intent
+    values: [strict, standard, loose]
+    role: sets fidelity strictness and voice envelope on every revisional path.
+  - id: task_mode
+    values: [diagnose_only, revise, evaluate, generate, teach, usage]
+    role: >-
+      separates reporting defects from applying changes from building new; usage is
+      a thin correctness-only variant of revise for grammar and punctuation.
+
+secondary_signals:
+  read_mode: [scanned, linear]
+  communicative_aim: [reveal, act]
+  document_length: [short, long]
+
+primary_routes:
+  - id: R-PLAN
+    signals: {stage: plan, task_mode: generate, has_reader_frame: false}
+    route_to: WF-PLAN
+    entry: frame-the-brief
+    note: WF-PLAN is plan-only; it stops at a checkable layout and drafts no prose.
+  - id: R-COMPOSE
+    signals: {stage: [plan, structure, draft], task_mode: generate, intent: brief-to-finished-document}
+    route_to: WF-COMPOSE
+    entry: frame-the-brief
+    note: >-
+      whole-document authoring end to end (write me a document / draft a full X
+      from these notes / turn this brief into a finished piece). WF-COMPOSE is the
+      plan-through-draft path; WF-PLAN is plan-only. Route here when the request
+      wants finished prose, not just a plan.
+  - id: R-FRAME
+    signals: {intent: identify-reader-and-knowledge}
+    route_to: SK-FRAME
+  - id: R-ARGUE
+    signals: {intent: notes-to-structured-argument, task_mode: generate}
+    route_to: SK-ARGUE
+    note: grouping and ordering are subroutines of one activation, not separate skills.
+  - id: R-TEST-ARG
+    signals: {intent: check-support-for-conclusion, task_mode: evaluate}
+    route_to: SK-TEST-ARG
+  - id: R-DRAFT
+    signals: {intent: draft-prose-from-outline, stage: draft}
+    route_to: SK-DRAFT
+  - id: R-DIAGNOSE
+    signals: {intent: whats-wrong-with-draft, task_mode: diagnose_only, depth_mode: [quick, standard]}
+    route_to: SK-DIAGNOSE
+    then: WF-REVISE or WF-RESTRUCTURE per defect layer
+  - id: R-RESTRUCTURE
+    signals: {intent: fix-the-structure, stage: revise, defect_layer: structure}
+    route_to: WF-RESTRUCTURE
+  - id: R-REVISE
+    signals: {intent: fix-flow-clarity-length-thinness, stage: revise, defect_layer: prose}
+    route_to: WF-REVISE
+    task_mode_map:
+      cohere: fix-flow
+      clarify: clearer-sentences
+      compress: cut-down
+      expand: expand-thin
+  - id: R-USAGE
+    signals: {intent: fix-grammar-or-punctuation-only, task_mode: usage}
+    route_to: SK-REVISE-PROSE
+    task_mode: usage
+    note: >-
+      lightweight correctness-only path; a trivial usage fix skips a full review pass,
+      but fidelity stays strict and no claim is changed.
+  - id: R-ADAPT
+    signals: {intent: rewrite-for-different-audience, task_mode: revise}
+    route_to: SK-ADAPT
+    note: audience change with technical precision anchored.
+  - id: R-SHAPE-CLOSE
+    signals: {intent: how-much-signposting-and-how-to-end, stage: plan_or_evaluate}
+    route_to: SK-SHAPE-CLOSE
+  - id: R-COMPARE
+    signals: {intent: what-changed-and-is-it-better, task_mode: evaluate, versions: 2}
+    route_to: SK-COMPARE
+  - id: R-REVIEW
+    signals: {intent: review-this-genre-document, task_mode: evaluate, depth_mode: [standard, deep]}
+    route_to: SK-REVIEW
+    requires: genre
+    genre_lens:
+      business_analytical: answer-first, real-recommendation, calibrated-close lens
+      academic: inferential-soundness, evidence-fit, fair-counterposition lens
+      general_explanatory: reader-comprehension and explanatory-clarity lens, with no recommendation to argue
+      technical_documentation: step-completeness, preserved-precision, navigation lens
+    policy_note: a policy memo is not its own genre; route it to the business_analytical lens.
+  - id: R-FINALIZE
+    signals: {intent: is-this-ready-to-ship, depth_mode: audit}
+    route_to: WF-FINALIZE
+  - id: R-DEEP-REVIEW
+    signals: {intent: thorough-multi-perspective-review, depth_mode: deep}
+    route_to: WF-DEEP-REVIEW
+  - id: R-QUICK
+    signals: {intent: fast-once-over, depth_mode: quick}
+    route_to: WF-QUICK
+  - id: R-TEACH
+    signals: {intent: teach-me-so-i-learn, task_mode: teach, depth_mode: teaching}
+    route_to: WF-TEACH
+
+depth_mode_defaults:
+  quick: WF-QUICK or SK-DIAGNOSE at quick depth, explicitly non-exhaustive
+  standard: single-skill or single-plane workflow
+  deep: WF-DEEP-REVIEW with orchestrator and independent reviewers
+  teaching: WF-TEACH
+  audit: WF-FINALIZE
+
+collision_handling:
+  rule: >-
+    The evaluator returns all comparable-strength candidates rather than picking
+    one, then disambiguates in a fixed order.
+  disambiguation_order:
+    - explicit stage or task_mode wins
+    - when the defect layer is known, structure defects route to restructure and prose defects route to revise
+    - when depth is unstated, default to standard, never deep
+    - when genre is required for review or shaping and is absent, ASK; do not assume
+    - when still tied, surface the choice to the user
+
+missing_signal_defaults:
+  reader_frame_absent: run SK-FRAME first, the most common clarification trigger
+  genre_absent_for_review: ask when genre is absent; do not infer it
+  read_mode_absent_for_apparatus: ask whether the document is scanned or linear
+  preservation_intent_absent: default strict for technical and academic, standard otherwise
+  depth_absent: default standard
+
+negative_examples:
+  - request: this paragraph does not flow
+    do_not: route to WF-RESTRUCTURE by default
+    do: route to WF-REVISE for cohesion; escalate to restructure only if diagnosis flags the incoherence as a structural symptom.
+  - request: give it a once-over and tell me it is ready to ship
+    do_not: satisfy the request with WF-QUICK
+    do: a ship decision requires WF-FINALIZE; a quick pass may not masquerade as a quality gate.
+  - request: make this shorter
+    do_not: drop hedges or qualifiers to hit the length
+    do: use the compress mode under WF-REVISE with the fidelity gate; qualifiers are retained.
+  - request: simplify this for a lay reader
+    do_not: route to SK-REVISE-PROSE for same-reader clarity
+    do: route to SK-ADAPT for an audience change with technical precision anchored.
+  - request: review my draft with genre unstated
+    do_not: pick a genre lens silently
+    do: ask which genre or document type before selecting the review lens.
+  - request: cluster these and tell me the order
+    do_not: create two skills worth of routing
+    do: SK-ARGUE handles grouping and ordering as one activation.
+  - request: the clearest order breaks my logic, which wins
+    do_not: default to structure wins or prose wins
+    do: enter the arbitration path; try a both-satisfying rewrite, reject meaning-altering fixes, and escalate a genuine unresolved same-passage conflict rather than deciding by fiat.
+
+attestation: "no source prose copied; no card ids in public files"

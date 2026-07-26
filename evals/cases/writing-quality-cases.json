@@ -1,0 +1,192 @@
+{
+  "meta": {
+    "file": "writing-quality-cases.json",
+    "stage": "M11 / Phase 12",
+    "produced_by": "evaluation-methodologist",
+    "purpose": "Original, judged writing-quality eval cases. Each case is scored by an LLM judge against the rubric in evals/rubrics/writing-quality.md. These are NOT auto-scored.",
+    "scoring": "judged (LLM judge) -- see evals/rubrics/writing-quality.md",
+    "rubric_dimension_vocabulary": [
+      "reader_alignment",
+      "governing_question_clarity",
+      "argument_hierarchy",
+      "grouping",
+      "ordering",
+      "coherence",
+      "sentence_clarity",
+      "precision",
+      "concision"
+    ],
+    "genre_note": "genre uses the v1 supported set (business_analytical, academic, general_explanatory, technical_documentation) plus honest out-of-scope labels (narrative, reflective, general) for cases that deliberately test genre boundaries. All prompts and drafts are invented for evaluation; any names, numbers, and organizations are fictional.",
+    "counts": {
+      "cases_total": 18
+    }
+  },
+  "cases": [
+    {
+      "id": "WQ-01",
+      "title": "Disorganized notes needing architecture",
+      "genre": "business_analytical",
+      "draft": "Notes for the fulfillment review. Returns are up in the northern hub. The new scanner rollout slipped two weeks. Staff say the pick paths are confusing. Peak season starts in nine weeks. Two of the three conveyors were down for a day last month. Customer complaints mention late dispatch. We hired six temps. The northern hub handles 40 percent of volume. Someone should look at layout. Also the label printers jam.",
+      "rubric_dimensions": ["governing_question_clarity", "argument_hierarchy", "grouping", "ordering", "reader_alignment"],
+      "gotcha": "A naive system starts writing fluent continuous prose over an unformed pile of observations, smoothing the notes into paragraphs without ever deriving the single question the document answers or grouping the items by one logical kind.",
+      "expected_behavior": "Route to structure-building before drafting. Derive exactly one governing question scaled to the reader's decision, state a one-line controlling idea, then group the notes into non-overlapping logical kinds and order each group by a single principle. Every note is placed under a parent or added to an explicit, labeled drop list; nothing is silently discarded. Prose is not produced until the architecture is validated."
+    },
+    {
+      "id": "WQ-02",
+      "title": "Strong argument, poor prose",
+      "genre": "business_analytical",
+      "draft": "The determination that the migration should proceed, a determination which rests on the observation, made across three quarters and not contradicted by any regional exception we examined, that the legacy system's per-transaction cost, when the amortized maintenance burden that the platform team has repeatedly flagged is included, exceeds the projected per-transaction cost of the replacement, is one that the evidence, in our view, supports.",
+      "rubric_dimensions": ["sentence_clarity", "coherence", "concision", "precision"],
+      "gotcha": "A naive system, seeing that the sentence is hard to read, reaches for the argument and re-architects it -- or, while smoothing the syntax, quietly drops the 'in our view' hedge or the 'no regional exception we examined' scope limit to make the line flow.",
+      "expected_behavior": "Recognize the defect as prose-plane, not structural: the reasoning is sound and correctly ordered, only the rendering is tangled. Route to prose revision (clarify / cohere). Break the center-embedding, restore given-before-new order, and manage end-weight, while preserving every qualifier, hedge, and scope limit intact. Do not alter the argument's structure."
+    },
+    {
+      "id": "WQ-03",
+      "title": "Clear prose, weak reasoning",
+      "genre": "business_analytical",
+      "draft": "We should move the whole team to the four-day week. Last quarter, one squad tried it and shipped their release early, and everyone I have spoken to since is enthusiastic. Rested people do better work. The companies that win the talent race are the ones bold enough to rethink the calendar, so this is really a question of whether we want to lead or follow.",
+      "rubric_dimensions": ["argument_hierarchy", "precision", "governing_question_clarity"],
+      "gotcha": "The prose is smooth and confident, so a naive system praises its clarity and passes it -- letting fluency stand in for validity while a single squad is generalized into a trend and the choice is framed as a false either/or.",
+      "expected_behavior": "Run the soundness judgment separately from and indifferent to the prose quality. Flag the anecdote-as-trend (one squad, one release), the true-but-irrelevant appeal ('rested people do better work'), and the false dichotomy ('lead or follow'). The clean surface must not vouch for the reasoning; report the logical defects with their locations rather than accepting the passage because it reads well."
+    },
+    {
+      "id": "WQ-04",
+      "title": "Technical writing with sensitive terminology",
+      "genre": "technical_documentation",
+      "draft": "The intake endpoint is idempotent: a client may safely retry a POST with the same request key, and at-least-once delivery from the upstream queue will not create duplicate ledger entries. Machined flanges must hold a tolerance of plus or minus 0.05 millimeters; parts outside that band are quarantined, not reworked.",
+      "rubric_dimensions": ["precision", "reader_alignment", "sentence_clarity"],
+      "gotcha": "Asked to simplify for a broader reader, a naive system rewrites 'idempotent' as 'safe', collapses 'at-least-once delivery' into 'reliable', and rounds 'plus or minus 0.05 millimeters' to 'about a twentieth of a millimeter' -- each substitution silently narrowing or widening the exact concept.",
+      "expected_behavior": "Treat technical precision as anchored. Any plain-language substitution must denote precisely the same concept, with no term narrowed or widened and no tolerance or scope changed; every flagged term keeps a definition anchor before and after. Where a term cannot be simplified without loss, define it in place rather than replace it. Numbers and units survive exactly."
+    },
+    {
+      "id": "WQ-05",
+      "title": "Academic prose with citations",
+      "genre": "academic",
+      "draft": "Early work reported that spaced practice improved recall in undergraduates tested one week later (Aldenford, 2011). A later study found a similar effect but only for verbal material and not for motor skills (Bhatt and Ruiz, 2016). Some authors have since argued the benefit is smaller than first claimed (Okonkwo, 2020). Taken together, the literature shows that spacing reliably improves all forms of learning.",
+      "rubric_dimensions": ["argument_hierarchy", "precision", "coherence", "governing_question_clarity"],
+      "gotcha": "A naive system tightens the paragraph and, in doing so, drops the 'verbal material and not motor skills' scope limit and keeps the final sentence, which overclaims 'all forms of learning' -- a conclusion the cited findings, with their caveats, do not license.",
+      "expected_behavior": "Apply the academic lens: judge inferential soundness and evidence fit, and flag the overclaim in the closing sentence, which contradicts the motor-skill exception in the second citation. Preserve every citation and its scope qualifier exactly. The conclusion must be scaled to what the evidence supports; no caveat is dropped in the name of a cleaner line."
+    },
+    {
+      "id": "WQ-06",
+      "title": "Executive writing needing compression",
+      "genre": "business_analytical",
+      "draft": "I wanted to take a moment to circle back and provide a bit of an update on where things currently stand with the vendor consolidation initiative that we kicked off earlier. At this point in time, after quite a lot of back-and-forth, we have basically managed to get ourselves down to what is roughly a shortlist of about three vendors, though I should note this is still somewhat preliminary and could potentially shift depending on the security review that is still pending.",
+      "rubric_dimensions": ["concision", "governing_question_clarity", "reader_alignment"],
+      "gotcha": "A naive compressor hits the word target by deleting 'roughly', 'about', or the 'pending security review' condition -- trading a real qualifier for brevity -- or it trims the front matter but still buries the one fact the executive needs.",
+      "expected_behavior": "Compress by deleting only words that carry no meaning and no parsing value, while keeping every hedge, number, and condition. Lead with the answer the reader needs ('Shortlist is down to three vendors, pending the security review'). 'Roughly three' and 'preliminary / pending' must survive; concision is not a license to drop caveats."
+    },
+    {
+      "id": "WQ-07",
+      "title": "Policy writing argued by demolishing alternatives",
+      "genre": "business_analytical",
+      "draft": "This memo recommends adopting the centralized approvals model. A decentralized model would be chaos: teams would approve their own spending with no oversight, fraud would go unchecked, and audit season would be a nightmare. A hybrid model is the worst of both worlds, doubling the process without fixing anything. Clearly, then, centralized approvals is the responsible choice.",
+      "rubric_dimensions": ["argument_hierarchy", "governing_question_clarity", "precision"],
+      "gotcha": "A naive system accepts the recommendation because it reads decisively -- not noticing that the case for centralized approvals is made entirely by caricaturing the alternatives rather than by arguing the option's own merits.",
+      "expected_behavior": "Handle the policy memo as a business_analytical sub-case. Require the recommendation to be argued on its merits, not by demolishing straw versions of the alternatives; flag the straw-alternative reasoning at the soundness gate. Because the conclusion may surprise or meet resistance, prefer a reasoning-first arrangement, and confirm counter-positions are handled fairly rather than knocked down."
+    },
+    {
+      "id": "WQ-08",
+      "title": "Strategy memo with label headings and a buried answer",
+      "genre": "business_analytical",
+      "draft": "Market Considerations. The mid-market segment has grown steadily and competitors have been slow to serve it. Product Considerations. Our platform already supports the core workflows this segment needs, with two gaps. Resourcing. We would need to shift roughly four engineers for a quarter. Conclusion. On balance, we recommend entering the mid-market segment next quarter.",
+      "rubric_dimensions": ["governing_question_clarity", "argument_hierarchy", "ordering", "reader_alignment"],
+      "gotcha": "A naive system leaves the recommendation stranded at the end and keeps headings like 'Market Considerations' that name a topic rather than assert a claim -- so a scanning executive reads three labels before learning what is being proposed.",
+      "expected_behavior": "Place the answer first for this decision-driving genre unless an expected-disagreement trigger justifies inversion. Rewrite each heading so it carries a real claim ('The mid-market segment is underserved and growing'), not a generic label. Provide a calibrated action-seeking close, since the aim is to drive a decision. The claim set is unchanged; only placement and heading content move."
+    },
+    {
+      "id": "WQ-09",
+      "title": "Explanatory writing for non-experts",
+      "genre": "general_explanatory",
+      "draft": "A vaccine cold chain maintains thermostable efficacy through validated 2-to-8-degree excursion envelopes. Because immunogenicity degrades once the lyophilized antigen is reconstituted, the reconstituted vial has a narrower stability window than the stored vial. Excursion logging is therefore mandatory at each custody transfer node.",
+      "rubric_dimensions": ["reader_alignment", "coherence", "sentence_clarity", "precision"],
+      "gotcha": "Written for a general reader, this leans on 'thermostable efficacy', 'immunogenicity', 'lyophilized', and 'custody transfer node' with no explanation -- the expert's blind spot -- and orders new terms before the given ideas that would ground them. A naive fix either leaves the jargon or 'simplifies' by making a claim inaccurate.",
+      "expected_behavior": "Apply the general_explanatory lens: make the concepts accessible for the assumed prior knowledge, introduce given information before new, and add concrete, picturable material (why a warm vial loses protection). Explain or replace each unexplained term without changing what it means, and close with a presentational, non-emoting ending -- the piece explains, it does not recommend."
+    },
+    {
+      "id": "WQ-10",
+      "title": "Narrative -- restructuring the sequence would destroy it",
+      "genre": "narrative",
+      "draft": "The bus was already pulling away when Mara reached the stop, so she started walking. She did not yet know that the walk would be the part of the day she remembered. Halfway down the hill she passed the shuttered bakery, and the smell of nothing where bread used to be stopped her longer than she expected.",
+      "rubric_dimensions": ["coherence", "sentence_clarity", "reader_alignment"],
+      "gotcha": "A naive system, keyed to an answer-first analytical default, imposes a summary-first structure -- leading with 'This passage is about noticing loss' -- or reorders the events into 'logical' groups, flattening a form whose whole effect depends on unfolding in time.",
+      "expected_behavior": "Recognize that narrative sits outside the answer-first analytical genres the system is built for. Do not force a governing-question or summary-first structure onto it and do not re-order the events. Offer sentence-level coherence and clarity help only, and state plainly that architectural restructuring does not apply to this form."
+    },
+    {
+      "id": "WQ-11",
+      "title": "Reflective writing with deliberate open-endedness",
+      "genre": "reflective",
+      "draft": "I keep circling the decision without landing on it. Part of me thinks leaving was the honest thing; part of me suspects I only call it honesty because it is easier than staying. I am not sure these two readings can be reconciled, and I am no longer certain they need to be. Maybe the point of writing this is not to decide.",
+      "rubric_dimensions": ["coherence", "reader_alignment", "sentence_clarity"],
+      "gotcha": "A naive system treats the unresolved tension as a defect to fix, manufactures a thesis the writer never intended ('Leaving was the right choice because...'), and strips the tentative modality -- turning 'maybe' and 'I am not sure' into confident assertions.",
+      "expected_behavior": "Preserve the exploratory stance and its modality; the uncertainty is content, not an error. Do not impose a governing question or force a conclusion the writer deliberately withheld. Light coherence and clarity help is appropriate; converting reflection into an argument is not, and the reflective form is outside the analytical genre set."
+    },
+    {
+      "id": "WQ-12",
+      "title": "Deliberately ambiguous prose",
+      "genre": "general",
+      "draft": "The two governments issued a joint statement noting that they had reached an understanding on the disputed waters and would each continue to act in accordance with their existing positions. Observers were left to read the sentence as they wished.",
+      "rubric_dimensions": ["precision", "sentence_clarity", "reader_alignment"],
+      "gotcha": "A naive system flags the ambiguity as a clarity defect and 'disambiguates' the diplomatic sentence -- forcing a single reading onto language whose function is precisely to hold more than one, and thereby changing what the passage does.",
+      "expected_behavior": "Distinguish ungrammatical from intentionally ambiguous. Where ambiguity is the writer's purpose, do not silently resolve it into one reading; surface it as a deliberate feature or ask, rather than picking a sense by fiat. Only genuine misparse traps -- ambiguity the writer did not intend -- are candidates for a clarity fix."
+    },
+    {
+      "id": "WQ-13",
+      "title": "Stylistically elegant rewrite that changes meaning",
+      "genre": "business_analytical",
+      "original": "In the pilot stores, the new checkout layout may have shortened queue times, though we could not separate its effect from the holiday staffing increase that ran at the same time.",
+      "proposed_rewrite": "The new checkout layout shortened queue times.",
+      "rubric_dimensions": ["precision", "governing_question_clarity", "concision"],
+      "gotcha": "The rewrite is shorter and more forceful, and a casual reader waves it through as a clean edit -- so a naive comparator reports it as a style win, missing that it deletes a scope limit, promotes a hedge to a certainty, and drops an alternative explanation.",
+      "expected_behavior": "Compare the two versions with a skeptical default. Classify the rewrite as meaning-altering, not a style win: it drops the 'in the pilot stores' scope limit, converts 'may have shortened' into a flat causal claim, and removes the confounding 'holiday staffing' alternative. List each dropped qualification with its original location and reject the rewrite under fidelity; a better-reading line that means something different is not an improvement."
+    },
+    {
+      "id": "WQ-14",
+      "title": "Structurally logical draft that is cognitively difficult",
+      "genre": "academic",
+      "draft": "The rejection, by the reviewing committee, of the proposal that funding, which had in prior cycles been allocated on the basis of headcount, be reallocated according to measured output, followed from their prior commitment, itself never made explicit in the minutes, to the principle that stability of expectation is a good that reallocation, however well justified on efficiency grounds, tends to erode.",
+      "rubric_dimensions": ["sentence_clarity", "coherence", "reader_alignment"],
+      "gotcha": "A naive system reads the difficulty as a sign the argument is broken and re-architects a hierarchy that is in fact sound -- or it declares the structure at fault when the only real problem is deep center-embedding and stacked nominalizations at the sentence level.",
+      "expected_behavior": "Locate the difficulty on the prose plane, not the structure. The logical hierarchy is coherent; the reading cost comes from center-embedding and abstraction. Route to prose clarity: unstack the nominalizations into concrete actions with visible actors and split the embedding, without disturbing the sound argument or dropping the 'never made explicit' and 'however well justified' qualifiers."
+    },
+    {
+      "id": "WQ-15",
+      "title": "Clear draft whose sections do not answer the governing question",
+      "genre": "business_analytical",
+      "draft": "Question for this brief: should we open a second support center, and if so, where? Section one describes, in clean prose, how our current support tickets are categorized. Section two explains, clearly, the history of how the first center was staffed. Section three walks through, readably, the software the team uses day to day. The writing throughout is smooth and easy to follow.",
+      "rubric_dimensions": ["governing_question_clarity", "argument_hierarchy", "reader_alignment"],
+      "gotcha": "Every section reads cleanly, so a naive system, judging on sentence quality, passes the document -- never checking whether the well-written sections actually answer the question the brief posed. They do not: none addresses whether or where to open a second center.",
+      "expected_behavior": "Test each section against the stated governing question, independent of how well it reads. Flag that none of the three sections answers 'should we, and where' -- a structural failure of relevance that clean prose conceals. Report it as an architecture defect (the material answers a different question) rather than accepting the draft on surface fluency."
+    },
+    {
+      "id": "WQ-16",
+      "title": "Case requiring exactly one clarification",
+      "genre": "general",
+      "prompt": "Here is our draft explainer about the new billing change. Please rewrite it so it lands well with our readers.",
+      "draft": "Starting next cycle, we are moving from monthly to usage-based billing. Charges will reflect what you actually consume. Existing plans will be migrated automatically.",
+      "rubric_dimensions": ["reader_alignment", "governing_question_clarity"],
+      "gotcha": "A naive system either assumes an audience -- guessing that 'our readers' are, say, enterprise admins -- and proceeds on that guess, or it buries the writer in a long list of clarifying questions before doing anything.",
+      "expected_behavior": "Emit exactly one clarification request: the audience question, since who the readers are and what they already know is the single missing fact that governs every downstream choice. Bias toward assuming too little rather than guessing. Ask the one question and wait; do not fabricate a reader profile and do not over-interrogate."
+    },
+    {
+      "id": "WQ-17",
+      "title": "Case where clarification is unnecessary",
+      "genre": "business_analytical",
+      "prompt": "Audience: our board of directors, who already know the quarter's headline numbers. Genre: a decision memo. Aim: get approval to pause hiring in Q3. Please cut this to under 80 words without losing any conditions.",
+      "draft": "We recommend pausing non-critical hiring in Q3. Revenue is tracking 6 percent below plan, and our cash runway, assuming no new financing, extends to roughly 14 months. Critical safety and compliance roles would be exempt from the pause, and we would revisit the decision at the Q3 close if bookings recover to plan.",
+      "rubric_dimensions": ["concision", "reader_alignment"],
+      "gotcha": "A naive system reflexively opens with clarifying questions -- asking who the audience is or what the goal is -- even though the prompt has already supplied audience, genre, aim, and constraint, adding latency and friction for no benefit.",
+      "expected_behavior": "Proceed without clarification: audience, genre, aim, and the length constraint are all specified. Do the compression directly, keeping every condition ('non-critical', 'assuming no new financing', 'roughly 14 months', the safety/compliance exemption, the recovery revisit). Asking a needless question here is itself a failure mode."
+    },
+    {
+      "id": "WQ-18",
+      "title": "Restructuring would be harmful -- a required-order procedure",
+      "genre": "technical_documentation",
+      "draft": "To rotate the database credential: 1) Put the service into maintenance mode. 2) Create the new credential in the secrets manager. 3) Update the running service to read the new credential. 4) Verify healthy connections on the new credential. 5) Revoke the old credential. 6) Take the service out of maintenance mode.",
+      "rubric_dimensions": ["ordering", "argument_hierarchy", "reader_alignment"],
+      "gotcha": "A naive system 're-groups by logical kind' -- clustering all the 'credential' steps together and all the 'maintenance mode' steps together -- or forces an answer-first summary on top, breaking a sequence whose order is fixed by real-world causal and temporal dependencies.",
+      "expected_behavior": "Recognize that the ordering is load-bearing: each step depends on the prior one, so re-grouping or re-ordering would produce an unsafe procedure. Do not restructure. Restructuring here is a coherence and fidelity harm, not a tidiness win; at most, improve step wording and add a verification note, leaving the sequence exactly as required by the underlying dependencies."
+    }
+  ],
+  "attestation": "no source prose copied; no card ids in public files"
+}

@@ -1,0 +1,217 @@
+{
+  "meta": {
+    "derived_from": "orchestration/routing/routing.yaml",
+    "purpose": "Machine-readable routing table for the deterministic routing-evaluator (TL-ROUTE). Same signals in -> same candidates out. Emits indicators, never verdicts.",
+    "note": "The evaluator matches ALREADY-EXTRACTED structured signals. It never interprets natural language. The 'intent' constraint is matched against the caller-supplied intent-hint.",
+    "attestation": "no source prose copied; no card ids in public files"
+  },
+  "dimensions": {
+    "genre": {
+      "values": ["business_analytical", "academic", "general_explanatory", "technical_documentation"],
+      "aliases": { "policy": "business_analytical" },
+      "role": "selects the review lens and shaping defaults; never inferred by a classifier"
+    },
+    "audience_expertise": {
+      "values": ["novice", "mixed", "practitioner", "expert"],
+      "role": "drives jargon and abstraction depth"
+    },
+    "stage": {
+      "values": ["plan", "structure", "draft", "diagnose", "revise", "evaluate", "validate"],
+      "role": "primary selector of workflow/skill family"
+    },
+    "depth_mode": {
+      "values": ["quick", "standard", "deep", "teaching", "audit"],
+      "role": "sets intensity and whether reviewers/orchestrator engage"
+    },
+    "preservation_intent": {
+      "values": ["strict", "standard", "loose"],
+      "role": "sets fidelity strictness and voice envelope"
+    },
+    "task_mode": {
+      "values": ["diagnose_only", "revise", "evaluate", "generate", "teach", "usage"],
+      "role": "separates reporting from applying from building; usage is correctness-only revise"
+    },
+    "aim": {
+      "values": ["reveal", "act"],
+      "role": "communicative aim (secondary signal)"
+    }
+  },
+  "secondary_signals": {
+    "read_mode": ["scanned", "linear"],
+    "communicative_aim": ["reveal", "act"],
+    "document_length": ["short", "long"]
+  },
+  "primary_routes": [
+    {
+      "id": "R-PLAN",
+      "signals": { "stage": "plan", "task_mode": "generate", "has_reader_frame": false },
+      "route_to": "WF-PLAN",
+      "entry": "frame-the-brief",
+      "note": "WF-PLAN is plan-only; it stops at a checkable layout and drafts no prose"
+    },
+    {
+      "id": "R-COMPOSE",
+      "signals": { "stage": ["plan", "structure", "draft"], "task_mode": "generate", "intent": "brief-to-finished-document" },
+      "route_to": "WF-COMPOSE",
+      "entry": "frame-the-brief",
+      "note": "whole-document authoring end to end (write me a document / draft a full X from these notes / turn this brief into a finished piece); WF-COMPOSE is plan-through-draft, WF-PLAN is plan-only"
+    },
+    {
+      "id": "R-FRAME",
+      "signals": { "intent": "identify-reader-and-knowledge" },
+      "route_to": "SK-FRAME"
+    },
+    {
+      "id": "R-ARGUE",
+      "signals": { "intent": "notes-to-structured-argument", "task_mode": "generate" },
+      "route_to": "SK-ARGUE",
+      "note": "grouping and ordering are subroutines of one activation, not separate skills"
+    },
+    {
+      "id": "R-TEST-ARG",
+      "signals": { "intent": "check-support-for-conclusion", "task_mode": "evaluate" },
+      "route_to": "SK-TEST-ARG"
+    },
+    {
+      "id": "R-DRAFT",
+      "signals": { "intent": "draft-prose-from-outline", "stage": "draft" },
+      "route_to": "SK-DRAFT"
+    },
+    {
+      "id": "R-DIAGNOSE",
+      "signals": { "intent": "whats-wrong-with-draft", "task_mode": "diagnose_only", "depth_mode": ["quick", "standard"] },
+      "route_to": "SK-DIAGNOSE",
+      "then": "WF-REVISE or WF-RESTRUCTURE per defect layer"
+    },
+    {
+      "id": "R-RESTRUCTURE",
+      "signals": { "intent": "fix-the-structure", "stage": "revise", "defect_layer": "structure" },
+      "route_to": "WF-RESTRUCTURE"
+    },
+    {
+      "id": "R-REVISE",
+      "signals": { "intent": "fix-flow-clarity-length-thinness", "stage": "revise", "defect_layer": "prose" },
+      "route_to": "WF-REVISE",
+      "task_mode_map": {
+        "cohere": "fix-flow",
+        "clarify": "clearer-sentences",
+        "compress": "cut-down",
+        "expand": "expand-thin"
+      }
+    },
+    {
+      "id": "R-USAGE",
+      "signals": { "intent": "fix-grammar-or-punctuation-only", "task_mode": "usage" },
+      "route_to": "SK-REVISE-PROSE",
+      "note": "lightweight correctness-only path; fidelity stays strict; no claim is changed"
+    },
+    {
+      "id": "R-ADAPT",
+      "signals": { "intent": "rewrite-for-different-audience", "task_mode": "revise" },
+      "route_to": "SK-ADAPT",
+      "note": "audience change with technical precision anchored"
+    },
+    {
+      "id": "R-SHAPE-CLOSE",
+      "signals": { "intent": "how-much-signposting-and-how-to-end", "stage": ["plan", "evaluate"] },
+      "route_to": "SK-SHAPE-CLOSE",
+      "requires": ["genre"],
+      "requires_note": "genre selects shaping defaults; ask when absent, do not infer"
+    },
+    {
+      "id": "R-COMPARE",
+      "signals": { "intent": "what-changed-and-is-it-better", "task_mode": "evaluate", "versions": 2 },
+      "route_to": "SK-COMPARE"
+    },
+    {
+      "id": "R-REVIEW",
+      "signals": { "intent": "review-this-genre-document", "task_mode": "evaluate", "depth_mode": ["standard", "deep"] },
+      "route_to": "SK-REVIEW",
+      "requires": ["genre"],
+      "requires_note": "genre selects the review lens; ask when absent, do not infer",
+      "genre_lens": {
+        "business_analytical": "answer-first, real-recommendation, calibrated-close lens",
+        "academic": "inferential-soundness, evidence-fit, fair-counterposition lens",
+        "general_explanatory": "reader-comprehension and explanatory-clarity lens, no recommendation to argue",
+        "technical_documentation": "step-completeness, preserved-precision, navigation lens"
+      }
+    },
+    {
+      "id": "R-FINALIZE",
+      "signals": { "intent": "is-this-ready-to-ship", "depth_mode": "audit" },
+      "route_to": "WF-FINALIZE"
+    },
+    {
+      "id": "R-DEEP-REVIEW",
+      "signals": { "intent": "thorough-multi-perspective-review", "depth_mode": "deep" },
+      "route_to": "WF-DEEP-REVIEW"
+    },
+    {
+      "id": "R-QUICK",
+      "signals": { "intent": "fast-once-over", "depth_mode": "quick" },
+      "route_to": "WF-QUICK"
+    },
+    {
+      "id": "R-TEACH",
+      "signals": { "intent": "teach-me-so-i-learn", "task_mode": "teach", "depth_mode": "teaching" },
+      "route_to": "WF-TEACH"
+    }
+  ],
+  "collision_rules": {
+    "rule": "Return all comparable-strength candidates rather than picking one; a collision is 2+ candidates sharing the top match strength.",
+    "disambiguation_order": [
+      "explicit stage or task_mode wins",
+      "when the defect layer is known, structure defects route to restructure and prose defects route to revise",
+      "when depth is unstated, default to standard, never deep",
+      "when genre is required for review or shaping and is absent, ASK; do not assume",
+      "when still tied, surface the choice to the user"
+    ]
+  },
+  "missing_signal_defaults": {
+    "reader_frame_absent": "run SK-FRAME first, the most common clarification trigger",
+    "genre_absent_for_review": "ask when genre is absent; do not infer it",
+    "read_mode_absent_for_apparatus": "ask whether the document is scanned or linear",
+    "preservation_intent_absent": "default strict for technical and academic, standard otherwise",
+    "depth_absent": "default standard"
+  },
+  "required_signal_ask": {
+    "genre": "ASK: genre required, do not infer"
+  },
+  "negative_examples": [
+    {
+      "request": "this paragraph does not flow",
+      "do_not": "route to WF-RESTRUCTURE by default",
+      "do": "route to WF-REVISE for cohesion; escalate to restructure only if diagnosis flags a structural symptom"
+    },
+    {
+      "request": "give it a once-over and tell me it is ready to ship",
+      "do_not": "satisfy with WF-QUICK",
+      "do": "a ship decision requires WF-FINALIZE; a quick pass may not masquerade as a quality gate"
+    },
+    {
+      "request": "make this shorter",
+      "do_not": "drop hedges or qualifiers to hit the length",
+      "do": "use compress mode under WF-REVISE with the fidelity gate; qualifiers are retained"
+    },
+    {
+      "request": "simplify this for a lay reader",
+      "do_not": "route to SK-REVISE-PROSE for same-reader clarity",
+      "do": "route to SK-ADAPT for an audience change with technical precision anchored"
+    },
+    {
+      "request": "review my draft with genre unstated",
+      "do_not": "pick a genre lens silently",
+      "do": "ask which genre or document type before selecting the review lens"
+    },
+    {
+      "request": "cluster these and tell me the order",
+      "do_not": "create two skills worth of routing",
+      "do": "SK-ARGUE handles grouping and ordering as one activation"
+    },
+    {
+      "request": "the clearest order breaks my logic, which wins",
+      "do_not": "default to structure wins or prose wins",
+      "do": "enter the arbitration path; try a both-satisfying rewrite, reject meaning-altering fixes, escalate a genuine unresolved same-passage conflict"
+    }
+  ]
+}

@@ -1,0 +1,129 @@
+# Agent Catalog (M4 / Phase 5)
+# PUBLIC FILE -- tracked in git.
+# Deliberately tiny. An agent exists ONLY where it needs isolated context, a
+# sustained specialist role, different tool permissions, independent review, or
+# orchestration. No agent is created merely to rename a workflow step.
+# COPYRIGHT/PRIVACY: NO source-card ids, NO book locators, ORIGINAL names only.
+
+meta:
+  produced_by: architecture-designer
+  stage: "M4 / Phase 5"
+  test_applied: >-
+    For each candidate we asked "would folding this back into a workflow step
+    running in the main context lose isolation, independence, parallelism, or
+    orchestration?" If no, it is NOT an agent. Only two survived.
+  counts:
+    agents_total: 2
+
+agents:
+
+  - id: AG-REVIEWER
+    name: independent-reviewer
+    role: >-
+      A blind, single-lens critic of a finished or near-finished document. Sees
+      only the document, the reader-frame, and its assigned lens -- never the
+      author's rationale, change history, or the other reviewers' findings --
+      and returns located, test-cited defects.
+    why_isolated_or_independent: >-
+      INDEPENDENT REVIEW + ISOLATED CONTEXT. Self-review is unreliable: the
+      writer's estimate of shared knowledge runs high and self-conceals (the
+      expert blind spot, CAP-05), so a reviewer that can see the author's intent
+      anchors to it and reproduces the blind spot. Fourteen use cases carry
+      needs_independent_review: true. A second, context-isolated reviewer
+      materially raises reliability precisely because it cannot see why the
+      author thinks the passage works. It also enables parallelism: several
+      lenses (structure, prose, soundness-and-reader-fit) run at once in
+      separate contexts.
+    not_just_a_renamed_step: >-
+      This is not diagnose-draft with a new label. diagnose-draft runs in the
+      author's own context and can read the plan and rationale; the whole point
+      of this agent is the OPPOSITE -- a walled-off context that guarantees the
+      finding is not contaminated by author intent. Same methodology, materially
+      different epistemic guarantee.
+    instantiation: >-
+      One agent DEFINITION, spawned N times with a lens parameter
+      (lens in {structure, prose, soundness_and_reader_fit}) rather than three
+      separate agent types -- the lenses differ by prompt and checklist, not by
+      tool permissions or role, so three definitions would be fragmentation.
+    allowed_tools: [Read, prose-analyzer, outline-validator, revision-comparator, source-overlap-guard]
+    disallowed_tools: [Edit, Write, NotebookEdit, network/web, spawn/Task]
+    produces: [defect-report contract (single lens, independent=true)]
+    handoff_schema: handoff-contracts.yaml#defect-report
+    stop_conditions:
+      - assigned lens fully covered and every finding carries a location + failed test
+      - no rewrite attempted (report-only; rewriting is out of role)
+      - escalation flag raised for any same-passage structure-vs-prose conflict it detects
+    foreground_background: background   # runs in parallel with sibling lenses
+    may_spawn: []
+
+  - id: AG-REVIEW-ORCH
+    name: review-orchestrator
+    role: >-
+      Decomposes a deep review into independent lenses, spawns the reviewers in
+      parallel, then reconciles their findings into one layered report --
+      surfacing conflicts rather than averaging them, and running the arbitration
+      and release gates.
+    why_isolated_or_independent: >-
+      ORCHESTRATION WITH QUALITY GATES. Deep multi-agent review (UC-28) requires
+      multiple independent perspectives to be decomposed, run in isolation, and
+      reconciled without collapsing to a single voice. That coordination -- fan
+      out to isolated reviewers, collect, reconcile, arbitrate same-passage
+      conflicts, decide release -- is a distinct control role, not a content
+      step. It also owns the cross-plane arbitration gate (CAP-11): where a
+      faithful structural arrangement is genuinely harder to read and no rewrite
+      reconciles the two, it must escalate the unresolved same-passage conflict
+      (open question Q9) rather than silently pick a plane.
+    not_just_a_renamed_step: >-
+      It is not review-document with a new label. review-document is a
+      single-context evaluative skill; this agent's job is only meaningful when
+      several isolated reviewers exist to coordinate. Remove the reviewers and
+      there is nothing to orchestrate -- so it earns existence exactly and only
+      in the deep-review workflow.
+    platform_note: >-
+      On a single-context / sequential platform (no real parallel isolated spawn),
+      this agent collapses into the deep-review workflow driver: its only
+      non-reviewer work (decompose, reconcile) is the workflow's d1/d3 stages, so
+      it adds no separate component there. It earns its independence only where a
+      parallel isolated spawn is genuinely available. This is honesty about the
+      boundary, not a redesign.
+    allowed_tools: [Read, Task, routing-evaluator, revision-comparator, outline-validator]
+    disallowed_tools: [Edit, Write, NotebookEdit, network/web]
+    produces: [defect-report contract (merged, multi-lens), arbitration_escalations]
+    handoff_schema: handoff-contracts.yaml#defect-report
+    stop_conditions:
+      - all lenses reported and reconciled; conflicts surfaced, not averaged
+      - every same-passage arbitration case either reconciled by a both-satisfying rewrite or escalated with the trade-off stated
+      - release gate evaluated (audit depth) with blocking vs non-blocking separated
+    foreground_background: foreground
+    may_spawn: [independent-reviewer]
+
+rejected_agent_candidates:
+  - candidate: planning-agent / drafting-agent / revision-agent
+    decision: rejected
+    reason: >-
+      No isolation, no independence, no parallelism, no orchestration -- these
+      are single-context transformations of the user's own material. They are
+      skills invoked by workflows. Making them agents would be renaming steps.
+  - candidate: arbiter-agent (cross-plane conflict)
+    decision: folded
+    reason: >-
+      Arbitration (CAP-11) is a reconciliation decision, not a sustained role
+      needing its own context. It is exercised inside revise-* and owned as a
+      gate by the review-orchestrator. A dedicated agent would add a handoff
+      boundary with no independence benefit.
+  - candidate: fidelity/meaning-preservation agent
+    decision: folded
+    reason: >-
+      Meaning-preservation is largely deterministic (claim/qualifier set
+      equality via revision-comparator) plus a bounded role/sense judgment. It is
+      a gate backed by a tool, and the independent-reviewer can carry the
+      residual judgment. A standalone agent adds latency, not reliability.
+  - candidate: genre-specialist agents (exec/academic/technical/policy reviewers)
+    decision: folded
+    reason: >-
+      These are the same review role under different lenses/genres. They differ
+      by checklist, not by permissions or independence guarantee, so they are the
+      genre parameter of review-document and the lens parameter of
+      independent-reviewer -- not four agent types.
+
+attestation: "no source prose copied; no card ids in public files"

@@ -1,0 +1,74 @@
+[
+  {
+    "id": "RC-01-frame-single-skill",
+    "note": "Reader is unknown; the request is to work out who the document is for. Exactly one skill should activate.",
+    "signals": { "intent-hint": "identify-reader-and-knowledge" },
+    "expect": { "target": "SK-FRAME" }
+  },
+  {
+    "id": "RC-02-argue-one-activation",
+    "note": "Loose notes need to become an answer-first structure. Grouping and ordering are subroutines of ONE skill activation, not two separate routes.",
+    "signals": { "intent-hint": "notes-to-structured-argument", "task_mode": "generate", "audience_expertise": "mixed" },
+    "expect": { "target": "SK-ARGUE" }
+  },
+  {
+    "id": "RC-03-plan-full-workflow",
+    "note": "Cold start with no reader frame and a request to plan a whole document. This justifies a full workflow, not a single skill.",
+    "signals": { "intent-hint": "plan-the-whole-brief", "stage": "plan", "task_mode": "generate", "has_reader_frame": false },
+    "expect": { "target": "WF-PLAN" }
+  },
+  {
+    "id": "RC-04-teach-workflow",
+    "note": "Learner wants to be walked through the fix so they can repeat it. Teaching depth routes to the teach workflow.",
+    "signals": { "intent-hint": "teach-me-so-i-learn", "task_mode": "teach", "depth_mode": "teaching" },
+    "expect": { "target": "WF-TEACH" }
+  },
+  {
+    "id": "RC-05-review-genre-absent-ASK",
+    "note": "A review is requested but the genre was never supplied. The router must ASK for genre rather than infer a review lens.",
+    "signals": { "intent-hint": "review-this-genre-document", "task_mode": "evaluate", "depth_mode": "standard" },
+    "expect": { "ask": true }
+  },
+  {
+    "id": "RC-06-review-genre-present",
+    "note": "Same review request but genre is explicitly academic, so the lens is selectable and no clarification is needed.",
+    "signals": { "intent-hint": "review-this-genre-document", "task_mode": "evaluate", "depth_mode": "deep", "genre": "academic" },
+    "expect": { "target": "SK-REVIEW" }
+  },
+  {
+    "id": "RC-07-collision-revise-vs-restructure",
+    "note": "The request is a revise at revise-stage but the defect layer (structure vs prose) is unknown. Two comparable-strength candidates must surface as a collision, not be silently resolved.",
+    "signals": { "stage": "revise" },
+    "expect": { "collision": true }
+  },
+  {
+    "id": "RC-08-depth-quick",
+    "note": "An explicit fast once-over. Depth quick selects the quick workflow.",
+    "signals": { "intent-hint": "fast-once-over", "depth_mode": "quick" },
+    "expect": { "target": "WF-QUICK" }
+  },
+  {
+    "id": "RC-09-adapt-not-prose-usage",
+    "note": "Simplify for a different reader while keeping precision. This is an audience change (adapt), and must NOT route to the same-reader prose/usage path.",
+    "signals": { "intent-hint": "rewrite-for-different-audience", "task_mode": "revise", "audience_expertise": "novice" },
+    "expect": { "target": "SK-ADAPT" }
+  },
+  {
+    "id": "RC-10-flow-revise-not-restructure",
+    "note": "A paragraph does not flow, diagnosed as a prose defect. This routes to revise, and the plausible-but-wrong restructure workflow must NOT activate.",
+    "signals": { "intent-hint": "fix-flow-clarity-length-thinness", "stage": "revise", "defect_layer": "prose" },
+    "expect": { "target": "WF-REVISE" }
+  },
+  {
+    "id": "RC-11-no-match",
+    "note": "An out-of-scope request (localize the copy into another language) matches no route in the writing system.",
+    "signals": { "intent-hint": "localize-copy-into-another-language" },
+    "expect": { "no_match": true }
+  },
+  {
+    "id": "RC-12-finalize-audit-not-quick",
+    "note": "A ship decision at audit depth. This requires the finalize workflow; a quick pass may not masquerade as a release gate.",
+    "signals": { "intent-hint": "is-this-ready-to-ship", "depth_mode": "audit" },
+    "expect": { "target": "WF-FINALIZE" }
+  }
+]

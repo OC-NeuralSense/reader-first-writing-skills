@@ -1,0 +1,22 @@
+name: prose clarity
+id: GATE-CLARITY
+purpose: >-
+  Confirm the reader can parse and follow the prose, with comprehension as the
+  target rather than any length or passive-count quota.
+applies_after: draft-prose, revise-prose, review-document
+owner: revise-prose / draft-prose / review-document
+indicators_from: [prose-analyzer]
+pass_criteria:
+  - misparse traps and deep center-embedding are removed or explicitly justified
+  - coherence relations are recoverable, topic continuity holds, and references are unambiguous
+  - given-before-new and end-weight are reconciled, reordering the construction when they collide
+  - wording is concrete and imageable; jargon is used only for in-group settled terms
+  - passives are kept only where discourse function warrants them
+fail_action: >-
+  run the revise-prose loop; escalate to structure when the incoherence is a
+  structural symptom rather than a wording problem.
+severity: blocking
+note: >-
+  Indicators inform, they do not dictate. The FIDELITY gate is supreme and
+  overrides every other resolution: no clarity edit may alter meaning to read more
+  smoothly.

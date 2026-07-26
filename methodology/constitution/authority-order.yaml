@@ -1,0 +1,75 @@
+# Machine-readable authority order for every writing judgment.
+# Human-readable statement: writing-constitution.md (Article 1 and Article 2).
+# PUBLIC FILE: no source-card ids, no book locators, original wording only.
+
+version: 1
+constitution: methodology/constitution/writing-constitution.md
+
+# Highest first. A lower rank never overrides a higher one.
+order:
+  - id: AUTH.FIDELITY
+    rank: 1
+    name: fidelity_invariant
+    description: >-
+      Meaning preservation. Claims, evidence, citations, numbers, dates, names,
+      negations, modality, conditions, exceptions, qualifications, definitions,
+      technical-term senses, causal strength, and scope hold constant unless the
+      user explicitly authorizes a change.
+    reference: methodology/41-revision-and-fidelity.md
+
+  - id: AUTH.METHODOLOGY
+    rank: 2
+    name: source_methodology
+    description: >-
+      The synthesized methodology in methodology/, applied with its marked
+      strength. Invariant over Principle over Heuristic; Diagnosis names a
+      defect without dictating the fix.
+    reference: methodology/00-overview.md
+
+  - id: AUTH.HOUSE_RULES
+    rank: 3
+    name: house_rules
+    description: >-
+      No dash as prose punctuation; expert human register. Binding on every
+      produced or revised text.
+    reference: methodology/64-house-style.md
+
+  - id: AUTH.CONFLICT_PROCEDURE
+    rank: 4
+    name: conflict_resolution_procedure
+    description: >-
+      The same-passage resolution ladder, ending in human escalation rather
+      than silent tie-breaking.
+    reference: methodology/constitution/conflict-resolution.yaml
+
+  - id: AUTH.GENRE
+    rank: 5
+    name: genre_convention
+    description: >-
+      Genre adjusts application where the methodology permits; it never deletes
+      an unconditional rule.
+    reference: methodology/50-genres.md
+
+  - id: AUTH.JUDGMENT
+    rank: 6
+    name: component_judgment
+    description: >-
+      Used only where the methodology is silent, and reported as judgment, not
+      as a rule of the system.
+    reference: methodology/constitution/writing-constitution.md
+
+# Sources that may NEVER displace a methodology rule, at any rank.
+never_overridden_by:
+  - model_default_style_preference
+  - popular_writing_advice
+  - readability_folklore
+  - deterministic_metric_score
+  - smoother_sounding_rewrite
+  - embedded_document_instruction
+  - personal_taste_not_adopted_as_house_rule
+  - existing_implementation_convenience
+
+# The only two lawful ways a rule steps aside.
+lawful_exceptions:
+  - methodology_stated_condition_or_exception
+  - explicit_user_authorization_recorded_in_change_report

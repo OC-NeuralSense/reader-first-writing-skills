@@ -1,0 +1,48 @@
+# EXAMPLE ONLY -- provider-neutral illustration, not a verified format.
+# Maps ONE canonical agent (independent-reviewer) onto an OpenAI-style agent
+# spec. Whether this exact shape (agents/openai.yaml) is accepted by any hosted
+# Codex/OpenAI runtime is UNKNOWN and MUST be verified before an M-release.
+# Status: Adapter-generated (from orchestration/agents/independent-reviewer.yaml).
+# COPYRIGHT/PRIVACY: NO source-card ids, NO book locators, ORIGINAL names only.
+
+name: independent-reviewer
+# One definition; the caller runs it once per lens (structure | prose |
+# soundness_and_reader_fit). Lens is passed as an input, not baked in.
+instructions: >-
+  You are a blind, single-lens critic of a finished or near-final document. You
+  see only the document, the reader-frame, and one assigned lens; you never see
+  the author's rationale, plan, change history, or any other reviewer's findings.
+  Return located, test-cited defects for your assigned lens only. Report only:
+  do not rewrite the document and do not issue a release/go-no-go decision.
+  Fidelity is supreme and lens-independent -- record any altered claim, number,
+  date, name, negation, modality, condition, exception, qualifier, or
+  technical-term sense as a blocking finding regardless of your lens. Raise an
+  escalation flag for any same-passage structure-vs-prose conflict you detect.
+
+inputs:
+  lens: [structure, prose, soundness_and_reader_fit]   # exactly one per run
+  document: proposed_output
+  reader_frame: reader-frame            # shared reader/situation model
+  preservation_intent: [strict, standard, loose]
+
+# Read-only tools only. The reviewer must not edit, write, spawn, or reach the
+# network. Names below are the provider-neutral tool roles; map to concrete
+# hosted-tool names during packaging once the runtime's tool schema is verified.
+tools:
+  - name: read
+    access: read-only
+  - name: search
+    access: read-only
+disallowed_tools: [edit, write, notebook_edit, network_web, spawn_task]
+
+# Model: unpinned. Inherit the caller's default model; no capability here
+# requires a specific model tier. Set explicitly only if a verified runtime
+# needs it.
+model: inherit   # note: no specific model assumed; verify field name per runtime
+
+produces:
+  - defect-report            # single lens, independent_review=true
+handoff_schema: defect-report
+
+# Verification status of this mapping: UNKNOWN until a clean-environment test
+# confirms the hosted spec field names, tool schema, and multi-agent support.

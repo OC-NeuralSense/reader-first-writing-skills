@@ -1,0 +1,127 @@
+# Canonical Workflow Spec -- restructure (WF-RESTRUCTURE)
+# PUBLIC, provider-neutral source of truth. Platform adapters are generated from this.
+# Handoff names resolve against handoff-contracts.yaml; gate ids against quality-gates.yaml.
+# COPYRIGHT/PRIVACY: original wording only; no concept-card ids; no book locators.
+
+name: restructure
+description: >-
+  Fix a document's structure while holding its meaning constant. Locate and name
+  the structural fault, verify it is genuinely logical rather than prose, repair
+  by re-grouping / re-ordering / re-summarizing / cutting, then prove meaning was
+  preserved and re-test soundness on the repaired structure.
+depth: standard   # supports deep
+
+triggers:
+  - "Fix the structure of this document."
+  - "Re-group and re-order these points."
+  - "The organization is wrong -- reorganize it."
+non_triggers:
+  - "Only sentence flow reads wrong -> revise."
+  - "Only wants a diagnosis, not a fix -> diagnose-draft."
+
+inputs:
+  required:
+    - draft_or_outline
+  optional:
+    - reader-frame
+    - argument-blueprint
+    - preservation_intent
+
+stages:
+  - id: r1
+    responsibility: >-
+      Locate and name the structural defect through the structure lens; if no
+      defect reproduces, hand off rather than invent one.
+    execution:
+      type: skill
+      component: diagnose-draft
+    depends_on: []
+    parallel_with: []
+    input_contract: none
+    output_contract: defect-report
+    gate: none
+    on_failure: escalate to deep-review if no defect reproduces
+    on_ambiguity: run test-argument to confirm the fault is logical, not prose
+
+  - id: r2
+    responsibility: >-
+      Verify the logical fault before any repair so a prose problem is not
+      mistaken for a structural one.
+    execution:
+      type: skill
+      component: test-argument
+    depends_on: [r1]
+    parallel_with: []
+    input_contract: defect-report
+    output_contract: defect-report
+    gate: GATE-SOUNDNESS
+    on_failure: return; the reported fault may be prose -- route to revise (prose-to-structure boundary)
+    on_ambiguity: mark the inference type as unresolved
+
+  - id: r3
+    responsibility: >-
+      Repair by re-grouping, re-ordering, re-summarizing, or cutting claims; the
+      named defect must stop reproducing without changing what the document claims.
+    execution:
+      type: skill
+      component: revise-structure
+    depends_on: [r2]
+    parallel_with: []
+    input_contract: defect-report
+    output_contract: change-report
+    gate: none
+    on_failure: try an alternative repair
+    on_ambiguity: when repairs trade off and stakes are high, present options for a ruling
+
+  - id: r4
+    responsibility: >-
+      Confirm meaning held constant across the repair by comparing the claim and
+      qualifier sets before and after.
+    execution:
+      type: tool
+      component: revision-comparator
+    depends_on: [r3]
+    parallel_with: []
+    input_contract: change-report
+    output_contract: change-report
+    gate: GATE-FIDELITY
+    on_failure: fidelity rollback -> return to r3
+    on_ambiguity: escalate to independent-reviewer for a role/sense judgment
+
+  - id: r5
+    responsibility: >-
+      Re-run the soundness test on the repaired structure to prove no logical
+      defect was introduced by the repair.
+    execution:
+      type: skill
+      component: test-argument
+    depends_on: [r4]
+    parallel_with: []
+    input_contract: change-report
+    output_contract: defect-report
+    gate: GATE-SOUNDNESS
+    on_failure: loop to r3 for further repair
+    on_ambiguity: none
+
+completion_conditions:
+  - named defect no longer reproduces
+  - pre and post claim set identical
+  - soundness re-test passes on the repaired structure
+failure_conditions:
+  - a fix that silently changes what the document claims
+quality_metrics:
+  - defect-reproduction = false
+  - claim-set equality = true
+  - soundness re-test pass
+
+notes:
+  loops:
+    - fidelity rollback: r4 blocks -> r3; exit is a passing fidelity gate advancing to r5
+    - soundness re-test loop: r5 blocks -> r3; exit is a passing soundness re-test (terminal)
+  escalations:
+    - r1 no-reproduce -> deep-review (transition, not a new workflow)
+    - r2 fault is prose -> revise (transition, not a new workflow)
+  terminal: r5
+  reachable_completion: true
+
+attestation: "no source prose copied; no card ids in public files"

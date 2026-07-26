@@ -1,0 +1,59 @@
+[
+  {
+    "id": "FC-01-negation-trap",
+    "note": "Revision silently flips polarity by dropping the negation.",
+    "original": "The relief valve does not open under sustained load.",
+    "revised": "The relief valve opens under sustained load.",
+    "expect_warnings": ["negation"]
+  },
+  {
+    "id": "FC-02-modality-trap",
+    "note": "A hard obligation is downgraded to a soft recommendation.",
+    "original": "Engineers must recalibrate the sensor before each field run.",
+    "revised": "Engineers should recalibrate the sensor before each field run.",
+    "expect_warnings": ["modality"]
+  },
+  {
+    "id": "FC-03-number-trap",
+    "note": "A reported quantity is changed during revision.",
+    "original": "The overnight batch yielded 240 units within tolerance.",
+    "revised": "The overnight batch yielded 420 units within tolerance.",
+    "expect_warnings": ["numbers"]
+  },
+  {
+    "id": "FC-04-date-trap",
+    "note": "The reported date shifts by a year between versions.",
+    "original": "The compliance audit closed on March 3, 2021.",
+    "revised": "The compliance audit closed on March 3, 2022.",
+    "expect_warnings": ["dates"]
+  },
+  {
+    "id": "FC-05-dropped-qualification",
+    "note": "A scope limitation on the claim is dropped in the revision.",
+    "original": "The method works, although only for datasets under ten thousand rows.",
+    "revised": "The method works for datasets under ten thousand rows.",
+    "expect_warnings": ["qualifier"]
+  },
+  {
+    "id": "FC-06-added-causal-claim",
+    "note": "A correlation is upgraded into an explicit causal claim.",
+    "original": "Sales rose in the third quarter, and the new pricing launched then.",
+    "revised": "Sales rose in the third quarter because the new pricing launched then.",
+    "expect_warnings": ["causal"]
+  },
+  {
+    "id": "FC-07-changed-technical-term",
+    "note": "A precise protocol version is swapped for a different one.",
+    "original": "Configure the HTTP2 endpoint before deploy.",
+    "revised": "Configure the HTTP3 endpoint before deploy.",
+    "expect_warnings": ["technical-terminology"]
+  },
+  {
+    "id": "FC-08-faithful-paraphrase-clean",
+    "note": "A genuine meaning-preserving paraphrase that swaps only untracked synonyms; no fidelity heuristic should fire.",
+    "original": "The team shipped the update on schedule.",
+    "revised": "The team delivered the release on schedule.",
+    "expect_warnings": [],
+    "expect_clean": true
+  }
+]

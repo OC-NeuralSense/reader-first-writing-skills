@@ -1,0 +1,17 @@
+{
+  "//": "Canonical Claude plugin marketplace manifest. The M9 build / M10 installer deploys this to .claude-plugin/marketplace.json at the repo root (that path is environment-protected here, so it is generated at package/install time). Presence of this file is NOT a publication claim; a public marketplace listing happens only under explicit human authorization (see docs/publication-checklist.md).",
+  "name": "reader-first-writing-marketplace",
+  "description": "An editorial system for AI agents: skills, independent review agents, and workflows that structure, draft, diagnose, and revise documents while preserving the writer's exact meaning.",
+  "owner": {
+    "name": "OC-NeuralSense",
+    "url": "https://github.com/OC-NeuralSense"
+  },
+  "plugins": [
+    {
+      "name": "reader-first-writing",
+      "source": "./",
+      "description": "A reader-first writing system: structure, draft, diagnose, revise, and review documents across argument architecture and sentence-level prose, with fidelity-preserving revision and independent review. Routes by writing goal (plan, draft, diagnose, restructure, revise, adapt, compare, review, finalize, teach).",
+      "version": "1.0.0"
+    }
+  ]
+}

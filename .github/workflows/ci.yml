@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  guard-private:
+    name: Private-source boundary
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      # Fail the build if any copyrighted/source-derived material is tracked.
+      - name: Guard private sources (all tracked files)
+        run: node scripts/guard-private.mjs --all
+      # Belt-and-suspenders: assert no book binaries exist anywhere in the checkout
+      # (the tiny synthetic test fixtures under tests/fixtures/ are exempt).
+      - name: Assert no book binaries tracked (synthetic test fixtures excluded)
+        run: |
+          if git ls-files | grep -Ev '^tests/fixtures/' | grep -Ei '\.(epub|pdf|docx|mobi|azw3?|azw)$' ; then
+            echo "::error::Book/source binary found in version control"; exit 1
+          fi
+          echo "No source binaries tracked (outside synthetic fixtures)."
+
+  test:
+    name: Validate + test + eval
+    needs: guard-private
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node: ['18', '20', '22']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - name: Install dependencies
+        # Use a reproducible install when a lockfile is present; fall back otherwise.
+        run: npm ci --no-audit --no-fund || npm install --no-audit --no-fund
+      - name: Validate (skill/agent frontmatter, manifest, workflow graphs)
+        run: npm run validate
+      - name: Unit + integration tests
+        run: npm test
+      - name: Deterministic evaluation (routing + fidelity)
+        run: npm run eval
+
+  release-check:
+    name: Release gate (build + package-content)
+    needs: guard-private
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund || npm install --no-audit --no-fund
+      # Runs guard + validate + tests + build + package-content leak check, and
+      # proves nothing private/copyrighted reaches dist/.
+      - name: Release check
+        run: npm run release:check

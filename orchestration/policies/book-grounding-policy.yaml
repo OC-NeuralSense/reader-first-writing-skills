@@ -1,0 +1,68 @@
+# Grounding policy: how every writing component stays anchored to the
+# synthesized source methodology rather than to model intuition.
+# Provider-neutral; applies to skills, agents, and workflow stages alike.
+# PUBLIC FILE: no source-card ids, no book locators, original wording only.
+
+version: 1
+constitution: methodology/constitution/writing-constitution.md
+authority_order: methodology/constitution/authority-order.yaml
+
+requirements:
+  - id: GROUND.DECLARE
+    rule: >-
+      Every skill and agent declares, in its definition, the methodology files
+      its responsibility depends on. A component acts only with its declared
+      material loaded; it does not substitute recalled generalities for the
+      files.
+
+  - id: GROUND.NO_GENERIC_SUBSTITUTE
+    rule: >-
+      Where the methodology provides a rule, the component applies that rule
+      with its conditions and exceptions. Generic model intuition is not an
+      acceptable stand-in (see SHORTCUT.GENERIC_SUBSTITUTION).
+
+  - id: GROUND.SILENCE_IS_REPORTED
+    rule: >-
+      Where the methodology does not determine the answer, the component says
+      so in its output and marks its judgment as judgment.
+
+  - id: GROUND.PRESERVE_ON_UNJUSTIFIED
+    rule: >-
+      A change that cannot be justified by a methodology rule or explicit user
+      authorization is not made. The original text stands.
+
+  - id: GROUND.REVIEWER_SAME_LAW
+    rule: >-
+      Reviewers judge by the same methodology through an independent lens. A
+      reviewer may not apply a private standard, and may not approve on
+      smoothness (see SHORTCUT.SMOOTHNESS_APPROVAL).
+
+  - id: GROUND.CONTEXT_OR_STOP
+    rule: >-
+      A transformation is not approved when the applicable methodology was
+      unavailable to the responsible component. Missing context is a stop
+      condition, not a license to improvise.
+
+  - id: GROUND.NO_RUNTIME_BOOK_DEPENDENCY
+    rule: >-
+      No public component depends on a private source file at runtime. The
+      methodology files carry the complete operational content.
+
+  - id: GROUND.CITATION_DISCIPLINE
+    rule: >-
+      Components cite methodology files and rule markers internally (in
+      reports and handoffs). They do not lecture the user with citations
+      unless the user asks for methodological explanation.
+
+# The auditable decision record a transforming component attaches to its
+# handoff. This is a record of rules and checks, not hidden reasoning.
+decision_record:
+  artifact: string            # what was produced or revised
+  methodology_loaded:         # files actually consulted
+    - path
+  checks_performed:           # e.g. fidelity, structure, prose, house_rules
+    - name
+  rules_set_aside: []         # each entry must name the lawful exception used
+  warnings: []
+  unresolved_questions: []
+  status: approved | escalated | no_change_needed

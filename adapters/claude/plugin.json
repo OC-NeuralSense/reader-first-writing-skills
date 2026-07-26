@@ -1,0 +1,21 @@
+{
+  "//": "Canonical Claude plugin manifest. The M9 build / M10 installer deploys this to .claude-plugin/plugin.json at the plugin root (that path is environment-protected here, so it is generated at package/install time). To test locally, copy this file to .claude-plugin/plugin.json then run: claude --plugin-dir .",
+  "name": "reader-first-writing",
+  "version": "1.0.0",
+  "description": "A reader-first writing system: structure, draft, diagnose, revise, and review documents across argument architecture and sentence-level prose, with fidelity-preserving revision and independent review. Routes by writing goal (plan, compose, diagnose, restructure, revise, adapt, compare, review, finalize, teach).",
+  "author": {
+    "name": "OC-NeuralSense",
+    "url": "https://github.com/OC-NeuralSense"
+  },
+  "homepage": "https://github.com/OC-NeuralSense/reader-first-writing-skills#readme",
+  "license": "Apache-2.0",
+  "keywords": [
+    "writing",
+    "editing",
+    "argument-structure",
+    "prose",
+    "revision",
+    "clarity",
+    "review"
+  ]
+}

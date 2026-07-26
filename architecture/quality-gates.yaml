@@ -1,0 +1,107 @@
+# Quality Gates (M4 / Phase 5)
+# PUBLIC FILE -- tracked in git.
+# The checkpoints a document must pass, their pass criteria, owners, and the
+# tools that supply their indicators. Gates enforce the fidelity invariants and
+# the supreme criterion (reader comprehension) without ranking the two planes.
+# COPYRIGHT/PRIVACY: NO source-card ids, NO book locators, ORIGINAL names only.
+
+meta:
+  produced_by: architecture-designer
+  stage: "M4 / Phase 5"
+  principle: >-
+    A gate turns tool warnings + model judgment into a pass/block decision. No
+    gate encodes "structure beats prose": comprehension is supreme, meaning is
+    never altered, and a genuine unresolved same-passage conflict is escalated,
+    not decided by fiat.
+  counts:
+    gates_total: 6
+
+gates:
+
+  - id: GATE-STRUCTURE
+    name: structure validity
+    owner: build-argument / revise-structure
+    indicators_from: [outline-validator]
+    pass_criteria:
+      - exactly one governing question and one controlling idea, subject/point separated
+      - every claim maps to a parent or the labeled drop list; no orphan nodes
+      - each group is one logical kind, non-overlapping, and judged complete
+      - no parent is a bare count/category topper; each parent genuinely summarizes its children
+      - answer placed first unless an expected-disagreement trigger justifies inversion
+    on_block: loop to re-group/re-order/re-summarize (structure-gate loop)
+    note: tool flags orphans/overlaps/empty toppers; faithful-summary and completeness are model judgments.
+
+  - id: GATE-FIDELITY
+    name: meaning-preservation / fidelity
+    owner: any transformation (revise-*, adapt, compress, expand)
+    indicators_from: [revision-comparator]
+    pass_criteria:
+      - propositional meaning, participant roles, and references unchanged
+      - every qualifier, hedge, scope limit, and condition present before is present after
+      - technical terms retain their exact sense (no silent narrowing/widening)
+      - no referent orphaned, no agent/patient role inverted
+      - change stays within the declared preservation_intent and voice envelope
+    on_block: fidelity rollback -- revert or redo preserving sense; never silently reword
+    supremacy: this gate overrides every other resolution; if satisfying both planes alters meaning, neither plane wins and the passage is escalated for re-planning.
+
+  - id: GATE-SOUNDNESS
+    name: argument soundness
+    owner: test-argument / review-document
+    indicators_from: [outline-validator]
+    pass_criteria:
+      - each parent-child link genuinely follows (no non-sequitur passes)
+      - no true-but-irrelevant support accepted as load-bearing
+      - overclaims, anecdote-as-trend, and false-dichotomy patterns flagged
+      - counter-evidence handled fairly; not argued by demolishing alternatives
+      - prose-plane edits neither created nor repaired a logical defect
+    on_block: return to structure repair; soundness is judged independently of styling
+    independent_review: recommended (deep depth) -- self-review misses subtle overclaims.
+
+  - id: GATE-CLARITY
+    name: prose clarity
+    owner: revise-prose / draft-prose / review-document
+    indicators_from: [prose-analyzer]
+    pass_criteria:
+      - misparse traps and deep center-embedding removed or justified
+      - coherence relations recoverable; topic continuity holds; references unambiguous
+      - given-before-new and end-weight reconciled (reordering construction when they collide)
+      - concrete, imageable wording; jargon only for in-group entrenched terms
+      - passives kept only where discourse function warrants
+    on_block: revise-prose loop; escalate to structure if incoherence is a structural symptom
+    note: comprehension is the target, not a length or passive-count quota -- indicators inform, do not dictate.
+
+  - id: GATE-ROUTING
+    name: routing correctness
+    owner: routing-evaluator / review-orchestrator
+    indicators_from: [routing-evaluator]
+    pass_criteria:
+      - the selected skill/workflow matches stage, task_mode, and depth
+      - genre and read-mode requested (not assumed) when a genre-lens or apparatus decision needs them
+      - collisions surfaced to the user, not silently resolved
+      - every same-passage structure-vs-prose conflict logged as reconciled or escalated (never averaged)
+    on_block: ask for the missing signal or present the tie
+    note: guards against the highest-frequency failure -- routing a structural fault to a prose fix or vice versa.
+
+  - id: GATE-RELEASE
+    name: release
+    owner: finalize (review-document audit) with human ratification
+    indicators_from: [source-overlap-guard, revision-comparator, outline-validator]
+    pass_criteria:
+      - blocking vs non-blocking defects separated; zero blocking defects at go
+      - comprehension, credibility, soundness, and correctness each judged acceptable
+      - meaning-preservation confirmed across all prior edits (GATE-FIDELITY green)
+      - disputed usage and punctuation settled; grammar distinguished from register
+      - apparatus density locked to genre; no protected-source or forbidden-id overlap
+    on_block: no-go; each blocking defect re-enters at its owning stage
+    ratifiable_parameters: [signposting_density, emotive_close_force, acceptance_thresholds]
+
+gate_sequence_by_workflow:
+  WF-PLAN: [GATE-STRUCTURE, GATE-SOUNDNESS]
+  WF-RESTRUCTURE: [GATE-SOUNDNESS, GATE-FIDELITY, GATE-SOUNDNESS]
+  WF-REVISE: [GATE-CLARITY, GATE-ROUTING, GATE-FIDELITY]
+  WF-DEEP-REVIEW: [GATE-STRUCTURE, GATE-CLARITY, GATE-SOUNDNESS, GATE-ROUTING]
+  WF-FINALIZE: [all -> GATE-RELEASE]
+  WF-TEACH: [GATE-CLARITY, GATE-FIDELITY]
+  WF-QUICK: [GATE-FIDELITY (light) only -- explicitly not a release gate]
+
+attestation: "no source prose copied; no card ids in public files"

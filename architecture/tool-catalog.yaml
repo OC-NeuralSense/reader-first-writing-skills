@@ -1,0 +1,140 @@
+# Deterministic Tool Catalog (M4 / Phase 5)
+# PUBLIC FILE -- tracked in git.
+# A tool exists only when the check is rule-based, testable, and repeatable and
+# model judgment adds no value. CRITICAL CONTRACT: tools emit WARNINGS and
+# INDICATORS, never verdicts. Every accept/reject decision belongs to a skill,
+# agent, or gate -- a tool only supplies signals for that judgment.
+# COPYRIGHT/PRIVACY: NO source-card ids, NO book locators, ORIGINAL names only.
+
+meta:
+  produced_by: architecture-designer
+  stage: "M4 / Phase 5"
+  warning_not_verdict_rule: >-
+    A tool never says "this is unclear" or "reject." It says "sentence 4 has an
+    embedding depth of 3 and length 47 words" or "qualifier 'only' present in v1,
+    absent in v2." The model reads the warning and decides. This keeps meaning
+    judgment with the model and mechanical measurement with the tool.
+  counts:
+    tools_total: 6
+
+tools:
+
+  - id: TL-PROSE
+    name: prose-analyzer
+    purpose: mechanical sentence/paragraph measurements that flag likely parsing and cognition risks
+    inputs: [passage, optional reader_glossary (in-group entrenched terms)]
+    checks_indicators_emitted:
+      - sentence length and clause count per sentence
+      - center-embedding / nesting depth
+      - candidate garden-path / misparse spans (pattern-based, flagged not judged)
+      - nominalization density and buried-verb candidates
+      - passive-voice occurrences with agent-present/absent tag (function NOT judged)
+      - candidate ambiguous pronoun/definite-reference spans
+      - undefined-term candidates = terms absent from the supplied reader_glossary
+    determinism_note: >-
+      Pure function of the text (+ glossary). Same input -> same warnings. Emits
+      counts and spans only; whether a passive is functional, a term is truly
+      jargon, or an embedding is too deep is left to the model.
+    consumed_by: [diagnose-draft, revise-prose, independent-reviewer]
+    test_approach: golden-file fixtures with known counts/spans; property test that output is idempotent and contains no accept/reject language
+
+  - id: TL-OUTLINE
+    name: outline-validator
+    purpose: structural integrity indicators over an argument-blueprint
+    inputs: [argument-blueprint contract]
+    checks_indicators_emitted:
+      - leaves with no parent link (orphan candidates)
+      - items appearing in more than one group (overlap candidates)
+      - groups whose label is a bare count or category word (empty-topper heuristic)
+      - group-label plural-noun / single-kind heuristic pass/flag
+      - missing apparatus-density value
+      - headings lacking a verb/assertion (generic-label heuristic)
+    determinism_note: >-
+      Operates on the structured blueprint, not prose. Reports which nodes/groups
+      trip each heuristic; it does NOT decide whether a summary is faithful or a
+      group is genuinely complete -- those are model judgments (CAP-19/CAP-16).
+    consumed_by: [build-argument, revise-structure, test-argument, review-orchestrator]
+    test_approach: fixtures with seeded orphans/overlaps/empty toppers; assert each is flagged and that faithful structures produce no warnings
+
+  - id: TL-COMPARE
+    name: revision-comparator
+    purpose: segment-level diff plus claim/qualifier set deltas to back meaning-preservation
+    inputs: [original_text, revised_text]
+    checks_indicators_emitted:
+      - aligned changed/unchanged segments with word-count delta
+      - qualifier / hedge / scope-word set present-before vs present-after (lost-qualification indicator)
+      - claim-token set delta (added/removed assertion candidates)
+      - negation and quantifier changes (scope-shift candidates)
+    determinism_note: >-
+      Deterministic diff + set comparison. Flags that a hedge disappeared or a
+      quantifier changed; it does NOT rule whether meaning actually changed --
+      the model/gate judges role and technical sense from these indicators.
+    consumed_by: [compare-versions, revise-prose, revise-structure, finalize, independent-reviewer]
+    test_approach: paired fixtures where a known caveat is dropped / a quantifier flipped; assert the delta is surfaced; assert identical inputs yield an empty delta
+
+  - id: TL-OVERLAP
+    name: source-overlap-guard
+    purpose: copyright and provenance safety -- flag verbatim overlap with protected sources and forbidden id patterns
+    inputs: [generated_text, optional protected_source_excerpts]
+    checks_indicators_emitted:
+      - n-gram overlap spans between generated text and any supplied protected source excerpt
+      - presence of source-card id patterns (e.g. PREFIX-Snn-nnn shapes) in text destined for public/tracked files
+      - book-locator / chapter-section pattern candidates
+    determinism_note: >-
+      Pure string/pattern matching. Emits overlap spans and pattern hits; it does
+      NOT decide fair use or rewrite -- it warns so a human or skill can act. This
+      is the runtime analogue of the tracked-file card-id guard.
+    consumed_by: [finalize, review-orchestrator, all output-producing skills (pre-emit check)]
+    test_approach: fixtures with planted card-ids and near-verbatim source spans; assert flags; assert clean original text passes
+
+  - id: TL-ROUTE
+    name: routing-evaluator
+    purpose: deterministic mapping from already-extracted request signals to candidate skill/workflow with collision indicators
+    inputs: ["routing_signals: {genre, aim, audience_expertise, stage, depth_mode, preservation_intent, task_mode}", "optional request_text"]
+    input_note: >-
+      The INPUT is the structured, already-extracted signal set (genre, aim,
+      task_mode, stage, depth, ...), NOT raw natural-language request text.
+      Extracting intent/signals from prose is a model judgment done upstream by
+      the model or a skill; request_text is optional and used only for keyword
+      hints, never interpreted by the tool.
+    checks_indicators_emitted:
+      - matched skill/workflow candidates with the rule that matched
+      - collision indicator when two candidates match with comparable strength
+      - missing-signal indicator (e.g. genre or read-mode absent)
+    determinism_note: >-
+      Implements the routing-matrix as a lookup over pre-extracted signals. Same
+      signals -> same candidates. Because it never interprets language itself, the
+      determinism and warnings-not-verdicts guarantees hold. On collision it
+      reports the tie for disambiguation; it does NOT silently pick -- the
+      ambiguity is surfaced to the user or orchestrator.
+    consumed_by: [top-level dispatch, review-orchestrator]
+    test_approach: table-driven cases from routing-matrix (including the negative examples); assert expected candidate + collision/missing-signal flags
+
+  - id: TL-WFVAL
+    name: workflow-validator
+    purpose: authoring/CI integrity check over the workflow and contract catalogs themselves
+    inputs: [workflow-catalog.yaml, handoff-contracts.yaml]
+    checks_indicators_emitted:
+      - stages missing input_contract / output_contract / gate / on_failure
+      - depends_on / parallel_with referencing an undefined stage id
+      - handoff_schema refs pointing to an undefined contract
+      - components referenced that exist in no catalog
+    determinism_note: >-
+      Static analysis of the specification files. Build-time/CI tool, not a
+      runtime writing tool; keeps the architecture self-consistent as it evolves.
+      Emits structural warnings only.
+    consumed_by: [CI / architecture authoring]
+    test_approach: malformed-catalog fixtures (dangling refs, missing gates) assert flags; the shipped catalogs must validate clean
+
+rejected_or_folded_tool_candidates:
+  - candidate: signposting-density calculator
+    decision: folded
+    reason: apparatus density is a genre/read-mode judgment (shape-and-close) with only a presence-check, which outline-validator already emits.
+  - candidate: reading-level scorer
+    decision: folded
+    reason: a heuristic already covered by prose-analyzer's length/embedding indicators; a separate readability index would imply a verdict the model must not outsource.
+  - candidate: grouping-completeness checker
+    decision: folded
+    reason: completeness is a model judgment (is any member missing?); outline-validator flags overlap and empty toppers, but completeness cannot be decided deterministically.
+
+attestation: "no source prose copied; no card ids in public files"

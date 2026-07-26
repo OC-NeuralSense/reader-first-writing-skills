@@ -1,0 +1,151 @@
+# Handoff Contracts (M4 / Phase 5)
+# PUBLIC FILE -- tracked in git.
+# The structured artifacts passed between skills, workflows, and agents.
+# Four core contracts cover the whole pipeline; every stage input/output in the
+# workflow catalog references one of these.
+# COPYRIGHT/PRIVACY: NO source-card ids, NO book locators, ORIGINAL names only.
+
+meta:
+  produced_by: architecture-designer
+  stage: "M4 / Phase 5"
+  design_rule: >-
+    Contracts carry decisions and evidence, not prose. They are the only thing
+    that crosses an agent boundary, so each is self-describing and includes its
+    own validation_warnings and a recommended_next_step to keep routing explicit.
+  counts:
+    contracts_total: 4
+
+contracts:
+
+  - id: reader-frame
+    produced_by: [frame-the-brief]
+    consumed_by: [build-argument, draft-prose, diagnose-draft, revise-prose, revise-structure, adapt-to-reader, review-document, teach-revision]
+    purpose: the single shared reader/situation model both planes read from and neither may contradict.
+    schema:
+      reader:
+        prior_knowledge: string        # what the reader is assumed to already know
+        standing_question: string      # the question they carry into the document
+        expertise_level: [novice, mixed, practitioner, expert]
+        mastered_vocabulary: [string]  # in-group entrenched terms safe to leave undefined
+      situation:
+        triggering_circumstance: string
+        unresolved_tension: string     # what makes the document necessary
+      communicative_aim: [reveal, act]
+      genre: [business_analytical, academic, general_explanatory, technical_documentation]
+      read_mode: [scanned, linear, unknown]
+      document_length: [short, long, unknown]
+      expert_blind_spots: [string]     # knowledge silently assumed; bias toward assuming too little
+      uncertainty_bias: assume_too_little
+      clarification_needed: [string]   # empty unless audience facts are missing
+      validation_warnings: [string]
+      recommended_next_step: string
+
+  - id: argument-blueprint
+    produced_by: [build-argument]
+    consumed_by: [test-argument, draft-prose, revise-structure, shape-and-close, outline-validator, review-orchestrator]
+    purpose: the validated argument object -- answer-first hierarchy with grouped, labeled, screened claims.
+    schema:
+      reader_ref: reader-frame          # the frame this was built against
+      purpose: [reveal, act]
+      governing_question: string        # exactly one, scaled to the reader's gap
+      controlling_idea:
+        answer: string                  # one-line lead answer
+        subject: string                 # what it concerns
+        point: string                   # what is asserted
+      claims:
+        - id: string
+          text: string
+          type: [conclusion, support, evidence]
+          parent: string_or_null        # null only for the controlling idea
+          support_status: [screened_sound, screened_weak, unscreened, dropped_irrelevant]
+      groups:
+        - label: string                 # substantive plural-noun label, never a bare count/category
+          logical_kind: string          # the single kind the members share
+          members: [claim_id]
+          ordering_principle: [argument_chain, chronological, part_structure, degree]
+          completeness_note: string     # is any obvious member missing?
+      answer_placement: [answer_first, reasoning_first]  # reasoning_first only on expected disagreement
+      opening_plan:
+        context: string
+        tension: string
+        question: string
+        answer: string
+      closing_plan: [presentational, action_seeking]     # set by shape-and-close
+      apparatus_density: [light, moderate, heavy]         # set by shape-and-close
+      layout_map:                        # section/paragraph map (CAP-21); set by shape-and-close
+        sections:
+          - id: string                  # section identifier, ordered as they appear
+            role: string                 # the function this section serves in the argument
+            contained_claims: [claim_id] # claim ids (or refs) this section carries
+            paragraph_plan: [string]     # ordered paragraph-level plan within the section
+      drop_list: [claim_id]             # notes explicitly excluded as irrelevant
+      assumptions: [string]
+      ambiguities: [string]
+      evidence_gaps: [string]
+      validation_warnings: [string]     # from outline-validator + soundness pass
+      recommended_next_step: string
+
+  - id: defect-report
+    produced_by: [diagnose-draft, test-argument, review-document, independent-reviewer, review-orchestrator]
+    consumed_by: [revise-structure, revise-prose, teach-revision, finalize, review-orchestrator, user]
+    purpose: located, test-cited defects on distinct layers, with escalations and coverage.
+    schema:
+      subject_ref: string               # document/passage identifier
+      reader_ref: reader-frame
+      depth: [quick, standard, deep, audit]
+      independent_review: boolean        # true when produced by an isolated reviewer
+      lens: [structure, prose, soundness_and_reader_fit, all]
+      findings:
+        - id: string
+          layer: [structure, prose, soundness, reader_fit]
+          location: string              # anchor into the document
+          failed_test: string           # the concrete test it failed
+          severity: [blocking, non_blocking]
+          evidence: string
+          recommended_fix: string
+          owning_stage: [plan, structure, draft, revise, evaluate, validate]
+      escalations:
+        - location: string
+          kind: [prose_to_structure, same_passage_arbitration]
+          trade_off: string
+          unresolved: boolean           # true logs an open Q9-class case
+      coverage:
+        structure: boolean
+        prose: boolean
+        soundness: boolean
+        reader_fit: boolean
+      exhaustiveness: [exhaustive, non_exhaustive]  # quick pass is non_exhaustive
+      validation_warnings: [string]
+      recommended_next_step: string
+
+  - id: change-report
+    produced_by: [revise-prose, revise-structure, adapt-to-reader, compare-versions]
+    consumed_by: [compare-versions, finalize, teach-revision, user]
+    purpose: per-change classification, fidelity result, and reader-effort rationale.
+    schema:
+      original_ref: string
+      revised_ref: string
+      preservation_intent: [strict, standard, loose]
+      changes:
+        - segment: string
+          change_type: [meaning_altering, meaning_preserving]
+          reader_effort_delta: [lower, neutral, higher]
+          principle: string             # the named reader-effort/soundness principle invoked
+          rationale: string             # reader effect, not taste
+      dropped_qualifications:
+        - text: string
+          original_location: string     # every dropped hedge/scope word listed
+      meaning_preserved: boolean
+      role_reference_integrity: boolean  # no orphaned referent, no inverted agent/patient
+      technical_precision_held: boolean
+      validation_warnings: [string]      # from revision-comparator
+      recommended_next_step: string
+
+contract_flow:
+  - frame-the-brief -> reader-frame -> build-argument
+  - build-argument -> argument-blueprint -> test-argument / draft-prose / shape-and-close
+  - diagnose-draft / reviewers -> defect-report -> revise-* / finalize
+  - revise-* / compare-versions -> change-report -> finalize / teach
+  - review-orchestrator merges many single-lens defect-reports -> one defect-report
+
+attestation: "no source prose copied; no card ids in public files"

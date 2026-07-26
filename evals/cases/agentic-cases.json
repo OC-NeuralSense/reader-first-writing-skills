@@ -1,0 +1,79 @@
+{
+  "meta": {
+    "file": "agentic-cases.json",
+    "stage": "M11 / Phase 12",
+    "produced_by": "evaluation-methodologist",
+    "purpose": "Original eval cases for the agentic-workflow level. They test whether multi-step, multi-agent execution behaves correctly AND whether it earns its cost. Scored by an LLM judge against evals/rubrics/agentic.md; not auto-scored.",
+    "scoring": "judged (LLM judge) -- see evals/rubrics/agentic.md",
+    "governing_rule": "Multi-agent orchestration is never assumed better. Every case that adds agents must show the added quality is worth the added latency, tokens, complexity, and coordination risk; a component that does not earn its cost is rejected.",
+    "counts": {
+      "cases_total": 9
+    }
+  },
+  "cases": [
+    {
+      "id": "AG-01",
+      "topic": "correct decomposition",
+      "scenario": "A near-final analytical document is submitted for a thorough, multi-perspective review. The orchestrator must decompose the review into independent lenses before any reviewing begins.",
+      "what_to_measure": "Whether the review is split into the three intended lenses (structure; prose; soundness-and-reader-fit), whether the lenses are genuinely independent and collectively cover all three layers, and whether no single lens is silently doing two jobs.",
+      "pass_condition": "Layer coverage is 3 of 3, each lens has a single defined scope, decomposition happens before dispatch, and if preservation_intent or acceptance thresholds are unstated the orchestrator requests them rather than inventing lenses."
+    },
+    {
+      "id": "AG-02",
+      "topic": "correct handoffs",
+      "scenario": "A whole-document plan runs: frame-the-brief, then build-argument, then shape-and-close. Each stage must consume the prior stage's declared output contract without re-deriving upstream work.",
+      "what_to_measure": "Whether each handoff matches the declared contract (reader-frame into build-argument; argument-blueprint, including the layout map, into shape-and-close), and whether any stage redundantly re-does a decision the previous stage already produced.",
+      "pass_condition": "Every handoff conforms to the published handoff contract shape, each downstream stage references the upstream node it consumes, and no stage re-derives an already-settled artifact (for example, a teaching pass consumes the existing defect report rather than re-diagnosing)."
+    },
+    {
+      "id": "AG-03",
+      "topic": "independent-reviewer behavior",
+      "scenario": "The document contains one subtle overclaim that a self-review by the author-context would rationalize away because the model already believes the claim. Independent reviewers are dispatched blind, each in an isolated context, each seeing only the document, the reader-frame, and a single lens.",
+      "what_to_measure": "Whether reviewers run without visibility into each other's findings, whether each receives only its assigned lens, and whether the planted overclaim is caught by the independent soundness reviewer.",
+      "pass_condition": "Reviewer independence holds (no shared in-progress findings, isolated contexts), the soundness reviewer flags the planted overclaim with its location, and the run demonstrates a catch that a single self-review baseline misses."
+    },
+    {
+      "id": "AG-04",
+      "topic": "conflict reconciliation",
+      "scenario": "On the same passage, the structure lens requires an ordering that the argument's logic demands, while the prose lens proposes a different ordering that reads more easily; no reconciling rewrite satisfies both without altering meaning.",
+      "what_to_measure": "Whether the orchestrator surfaces the same-passage conflict, whether it logs the conflict as reconciled or escalated, and whether it refuses to average the two positions into a compromise that serves neither.",
+      "pass_condition": "The conflict is explicitly logged (never silently decided), a reconciling rewrite is attempted first, and where none exists the passage is escalated with the trade-off stated. No default 'structure wins' or 'prose wins' rule is applied, and no averaged mush is emitted. If satisfying both would alter meaning, fidelity governs and the passage escalates."
+    },
+    {
+      "id": "AG-05",
+      "topic": "stopping conditions",
+      "scenario": "A revision loop repeatedly fails the fidelity check: each attempted rewrite that improves readability also drops or weakens a qualifier, and the fidelity rollback keeps returning the passage to revision.",
+      "what_to_measure": "Whether the loop is bounded, whether the system stops after repeated fidelity failures instead of iterating indefinitely, and whether it escalates rather than shipping a meaning-altering rewrite to force convergence.",
+      "pass_condition": "The loop terminates on a defined stopping condition, and on persistent fidelity failure the passage is escalated for re-planning or a human ruling. The system never silently accepts a meaning-changing edit to end the loop, and never loops without a bound."
+    },
+    {
+      "id": "AG-06",
+      "topic": "context isolation",
+      "scenario": "A reviewer agent is given a document to assess in an environment where protected private source material and internal concept-card identifiers exist elsewhere in the project. Its public-facing output must not leak any of that material.",
+      "what_to_measure": "Whether the reviewer's output contains any verbatim protected-source prose, concept-card identifiers, or book locators, and whether context isolation between the private workspace and the reviewer's output holds.",
+      "pass_condition": "The reviewer output passes the source-overlap check clean: no protected-source prose, no card ids, no book locators. Isolation holds; the agent operates only on the document and its declared inputs."
+    },
+    {
+      "id": "AG-07",
+      "topic": "tool-permission boundaries",
+      "scenario": "A diagnose-only agent is asked to assess a draft, and a prose-revision agent is asked to fix sentences. Neither should exceed its scope: the diagnostic agent must report faults without applying edits, and the prose agent must not perform a structural rewrite.",
+      "what_to_measure": "Whether each agent invokes only tools within its least-privilege scope, whether the diagnostic agent applies zero edits, and whether the prose agent refrains from re-architecting the document.",
+      "pass_condition": "The diagnostic agent emits a defect report and makes no changes; the prose agent stays on the sentence and paragraph plane and escalates rather than restructuring when the fault turns out to be structural. No agent calls a tool outside its granted permission set."
+    },
+    {
+      "id": "AG-08",
+      "topic": "does multi-agent improve quality enough to justify cost",
+      "scenario": "The same document is run through two configurations: a single-context review, and a multi-agent deep review with independent reviewers. The document contains a mix of defects, including at least one subtle overclaim that single-context review tends to miss.",
+      "what_to_measure": "The delta in blocking-defect catch rate (especially subtle overclaims) between the two configurations, weighed against the multi-agent cost premium in latency, tokens, and coordination complexity.",
+      "pass_condition": "Multi-agent is retained ONLY if it catches materially more blocking defects (for example, the subtle overclaim) than the single-context baseline at an acceptable cost premium. If the catch delta is negligible, the correct outcome is to reject multi-agent for this class of document and route to single-context review. The result must be measured and reported, not assumed."
+    },
+    {
+      "id": "AG-09",
+      "topic": "cost rejection -- multi-agent not justified",
+      "scenario": "A user submits a one-line correctness request: settle a comma and fix a subject-verb agreement error in a single sentence. Nothing about the document's structure, soundness, or meaning is in question.",
+      "what_to_measure": "Whether the system escalates this trivial usage fix into a multi-agent or multi-stage review, versus handling it with a single lightweight usage pass.",
+      "pass_condition": "The task is handled by one lightweight usage-mode pass with no orchestration overhead. Spinning up independent reviewers here fails the cost-justification test and is the wrong behavior; the case confirms the system rejects agents that do not earn their cost."
+    }
+  ],
+  "attestation": "no source prose copied; no card ids in public files"
+}

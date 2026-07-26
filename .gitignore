@@ -1,0 +1,51 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# PRIVATE-SOURCE BOUNDARY — never commit copyrighted book material or anything
+# derived from it. This block is load-bearing; the pre-commit guard enforces it.
+# ─────────────────────────────────────────────────────────────────────────────
+development-private/
+*.epub
+*.pdf
+*.docx
+*.mobi
+*.azw
+*.azw3
+
+# Extracted / OCR'd source text and analysis (belt-and-suspenders; also under
+# development-private/, but guard against strays anywhere in the tree)
+**/extracted/
+**/ocr/
+**/concept-cards/
+*.ocr.txt
+*.extract.txt
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Build / generated artifacts
+# ─────────────────────────────────────────────────────────────────────────────
+dist/
+*.tgz
+*.zip
+checksums.txt
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Node
+# ─────────────────────────────────────────────────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+coverage/
+.nyc_output/
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Editors / OS
+# ─────────────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*~
+
+# Allow synthetic test fixtures explicitly (they are NOT real book content).
+# These are tiny hand-made EPUB/PDF files created for the repo.
+!tests/fixtures/**

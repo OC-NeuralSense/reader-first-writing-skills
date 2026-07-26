@@ -1,0 +1,287 @@
+# Platform Capabilities (M4 / Phase 5)
+# PUBLIC FILE -- tracked in git.
+# Maps the architecture (12 skills, 2 agents, 8 workflows, 6 tools, 4 contracts,
+# 6 gates) onto each target platform, with HONEST per-item status labels.
+# Nothing here is built yet: labels record what the format CAN carry, not what
+# has been shipped or run. Platform format facts trace to docs/platform-compatibility.md.
+# COPYRIGHT/PRIVACY: NO source-card ids, NO book locators, ORIGINAL names only.
+
+meta:
+  produced_by: architecture-designer
+  stage: "M4 / Phase 5"
+  status_vocabulary:
+    Tested: built and exercised on the platform; behavior observed.
+    Specification-compatible: maps cleanly onto a documented platform format; not yet built or run.
+    Adapter-generated: emitted by a build step that transforms the canonical spec into a platform-specific shape.
+    Partially-supported: only part of the component maps; the remainder is simulated or dropped.
+    Unsupported: the platform has no mechanism for this; must be simulated or omitted.
+    Unknown: the platform's support is not yet verified; MUST be checked before the milestone noted.
+  honesty_note: >-
+    No item is labeled Tested. The whole system is a specification at this stage;
+    the highest honest label is Specification-compatible (Claude Code, generic) or
+    Unknown (Codex/OpenAI multi-agent + bundle limits).
+  architecture_inventory:
+    skills_total: 12
+    agents_total: 2
+    workflows_total: 7
+    tools_total: 6
+    contracts_total: 4
+    gates_total: 6
+  source_of_format_facts: docs/platform-compatibility.md
+
+platforms:
+
+  - id: claude_code
+    name: Claude Code plugin
+    overall_status: Specification-compatible
+    basis: >-
+      Verified 2026-07-24 against official Claude Code plugin docs and the
+      installed ruflo-plugin-creator scaffolder + validator. Local loading of
+      THIS repo's plugin is not yet tested, so nothing here is Tested.
+    mappings:
+
+      skills:
+        target: plugin skills/<name>/SKILL.md (auto-discovered; override arrays omitted)
+        status: Specification-compatible
+        native: >-
+          All 12 skills (frame-the-brief, build-argument, test-argument,
+          draft-prose, diagnose-draft, revise-structure, revise-prose,
+          adapt-to-reader, shape-and-close, compare-versions, review-document,
+          teach-revision) map one-to-one onto SKILL.md folders. Routing lives in
+          the description/when_to_use budget; depth_mode/task_mode/genre are
+          arguments, not extra skills.
+        adapter_generated: >-
+          SKILL.md frontmatter (name, description, allowed-tools space-separated,
+          no wildcards) generated from the skill-catalog entry.
+        simulated: none
+        unsupported: none
+
+      agents:
+        target: plugin agents/<name>.md (invoked via @plugin:agent or by description)
+        status: Specification-compatible
+        native: >-
+          Both agents map natively. independent-reviewer -> one agent DEFINITION
+          spawned N times with a lens parameter (structure | prose |
+          soundness_and_reader_fit), background, isolation set for a walled-off
+          context. review-orchestrator -> one foreground agent that owns Task to
+          spawn the reviewers and run the arbitration + release gates.
+        adapter_generated: >-
+          agent .md frontmatter (name, description, model, tools/disallowedTools,
+          isolation, background) generated from agent-catalog allowed_tools /
+          foreground_background / instantiation fields.
+        simulated: none
+        unsupported: >-
+          Plugin agents do not support hooks, mcpServers, or permissionMode
+          (per platform-compatibility.md). None of the two agents need them, so
+          nothing is lost.
+
+      workflows:
+        target: orchestration invoked via skills/ and commands/ (no native workflow-engine file)
+        status: Specification-compatible
+        native: >-
+          The single-agent orchestration workflow (deep-review) is carried by the
+          review-orchestrator agent using Task. User-facing entry to any of the 7
+          workflows (quick-pass, plan-document, restructure, revise, deep-review,
+          finalize, teach) is a command or a skill that sequences the member
+          skills.
+        adapter_generated: >-
+          Per-workflow stage/gate sequencing (depends_on, parallel_with,
+          on_failure/on_ambiguity loops, gate_sequence_by_workflow) generated as
+          the invoking skill's/command's procedure text. Loops are expressed as
+          on_failure transitions, not as engine constructs.
+        simulated: >-
+          Cross-stage state (contracts passed between stages) is carried in
+          conversation/handoff text rather than a durable engine store -- an
+          orchestration convention, not a platform feature.
+        unsupported: >-
+          No first-class durable workflow runtime; there is no native pause/resume
+          engine. Not required for v1 single-document scope.
+
+      tools:
+        target: bundled scripts under the plugin (deterministic CLIs)
+        status: Specification-compatible
+        native: >-
+          All 6 tools ship as bundled deterministic scripts: prose-analyzer,
+          outline-validator, revision-comparator, source-overlap-guard,
+          routing-evaluator, workflow-validator. They emit warnings/indicators
+          only, never verdicts, so they need no model access.
+        adapter_generated: >-
+          Thin CLI wrappers + allowed-tools wiring so skills/agents can call each
+          tool by name (consumed_by fields drive which skill lists which tool).
+        simulated: none
+        unsupported: none
+        note: >-
+          workflow-validator is a CI/authoring tool, not a runtime writing tool;
+          it validates the catalogs themselves and need not ship in the runtime bundle.
+
+      user_commands:
+        target: commands/<name>.md (namespaced /<plugin>:<command>)
+        status: Specification-compatible
+        native: >-
+          One user command per workflow entry point plus direct-skill shortcuts;
+          frontmatter (name, description, argument-hint for depth/genre/task_mode).
+        adapter_generated: command .md files generated from workflow triggers + routing-matrix intents.
+        simulated: none
+        unsupported: none
+
+      contracts_and_gates:
+        target: shared JSON/YAML schemas referenced by skills, agents, and tools
+        status: Specification-compatible
+        native: >-
+          The 4 handoff contracts (reader-frame, argument-blueprint,
+          defect-report, change-report) and 6 gates travel as structured payloads
+          + procedure text; each carries its own validation_warnings and
+          recommended_next_step so routing stays explicit across an agent boundary.
+        adapter_generated: JSON schema files emitted from handoff-contracts.yaml for validation.
+        simulated: gate pass/block decisions are performed in-procedure (tool indicators + model judgment), not by an engine.
+        unsupported: none
+
+    hooks_policy:
+      status: Partially-supported (used only if justified)
+      note: >-
+        Hooks are available (hooks/hooks.json or inline). Per project policy they
+        are added ONLY if justified, safe, documented, optional, narrowly scoped,
+        non-destructive, and free of undisclosed network calls. Candidate
+        justification: a PreToolUse/PostToolUse or Stop hook wiring
+        source-overlap-guard as a pre-emit card-id / protected-source check
+        (the runtime analogue of the tracked-file card-id guard). Not adopted
+        until justified; default is no hooks.
+
+    open_verification:
+      - one-command GitHub install (npx from github) is Unverified; do not document as functional until a clean-environment test (M10).
+      - local loading of this repo's plugin is not yet Tested; promote to Tested only after a real load + invocation.
+
+  - id: codex_openai
+    name: Codex / OpenAI Agent Skills
+    overall_status: Unknown
+    basis: >-
+      Hosted skill bundle format, bundle size/file-count limits, agents/openai.yaml
+      support, and local Codex skills install location are NOT yet verified for this
+      repo (per platform-compatibility.md). Multi-agent primitives are unconfirmed.
+    mappings:
+
+      skills:
+        target: hosted skill bundle (assumed exactly one SKILL.md per bundle)
+        status: Partially-supported
+        native: >-
+          The 12 skills are preserved as skill bundles; canonical SKILL.md content
+          is portable in principle.
+        adapter_generated: per-bundle SKILL.md + any agents/openai.yaml emitted from the catalogs.
+        simulated: none
+        unsupported: none
+        unknown: >-
+          Whether one-SKILL.md-per-bundle, bundle size, and file-count limits allow
+          the tool CLIs + schemas to be co-bundled is UNKNOWN and MUST be verified
+          before M9/M10.
+
+      agents:
+        target: native multi-agent primitive (existence unconfirmed)
+        status: Unsupported
+        native: none confirmed.
+        adapter_generated: none.
+        simulated: >-
+          Both agents are simulated. independent-reviewer's context-isolation and
+          the review-orchestrator's fan-out/reconcile are reproduced via
+          orchestration skills + SEQUENTIAL passes: each lens is run as a separate,
+          fresh-context pass and the orchestrator skill merges the single-lens
+          defect-reports, surfacing conflicts rather than averaging them.
+        unsupported: >-
+          True parallel isolated reviewer contexts and a guaranteed blind context
+          are Unsupported if no native multi-agent runtime exists; the epistemic
+          benefit (a reviewer that cannot see author intent) is approximated by
+          fresh-context sequential passes, not guaranteed.
+        unknown: whether Codex exposes any native isolated sub-agent is UNKNOWN; verify before M9.
+
+      workflows:
+        target: orchestration skills driving sequential passes
+        status: Partially-supported
+        native: none (no native workflow engine assumed).
+        adapter_generated: each of the 8 workflows emitted as an orchestration skill that sequences member skills + tool CLIs.
+        simulated: >-
+          Parallel stages (deep-review's concurrent lenses) collapse to sequential
+          passes; loops (structure-gate, fidelity rollback) run as re-invocation.
+        unsupported: durable pause/resume; native branching engine.
+
+      tools:
+        target: CLIs shipped alongside/in the bundle
+        status: Partially-supported
+        native: all 6 tools run as standalone deterministic CLIs (no platform primitive needed).
+        adapter_generated: CLI entry points identical to the Claude Code bundle.
+        simulated: none
+        unsupported: none
+        unknown: co-bundling the CLIs within a hosted skill bundle is gated on the UNKNOWN bundle limits above.
+
+      contracts_and_gates:
+        target: JSON schemas + in-skill gate procedures
+        status: Partially-supported
+        native: the 4 contracts and 6 gates carry as JSON payloads + procedure text.
+        simulated: gate enforcement and cross-pass state handoff are in-skill conventions.
+        unsupported: none
+
+    open_verification:
+      - VERIFY BEFORE M9: hosted skill bundle format (one SKILL.md per bundle), bundle size + file-count limits, agents/openai.yaml support, local Codex skills install location.
+      - VERIFY BEFORE M9: existence of any native isolated/parallel sub-agent primitive; until then, agents remain simulated via sequential passes.
+
+  - id: generic
+    name: Generic filesystem agents
+    overall_status: Specification-compatible
+    basis: >-
+      Specification-compatible by construction: canonical skill folders +
+      provider-neutral orchestration specs + JSON schemas + tool CLIs + manual
+      install instructions. No universal-compatibility claims are made.
+    mappings:
+
+      skills:
+        target: canonical skill folders (provider-neutral SKILL.md + metadata)
+        status: Specification-compatible
+        native: all 12 skills exist as the canonical source form other platforms adapt FROM.
+        adapter_generated: none (this IS the canonical form).
+        simulated: none
+        unsupported: none
+
+      agents:
+        target: provider-neutral orchestration specs describing the 2 agent roles
+        status: Specification-compatible
+        native: >-
+          Both agent roles (independent-reviewer with its lens parameter,
+          review-orchestrator) are described as orchestration specs a host runtime
+          can implement; isolation/independence are stated as requirements.
+        adapter_generated: none.
+        simulated: >-
+          Whether isolation and parallelism are real depends on the host runtime;
+          a runtime lacking sub-agents runs the specs as sequential passes.
+        unsupported: none at the spec level; parallelism/isolation is a host capability, not guaranteed.
+
+      workflows:
+        target: orchestration/ specs (stages, gates, loops as data)
+        status: Specification-compatible
+        native: all 8 workflows expressed as provider-neutral stage/gate/loop specs (execution types -- skill, agent, tool, human-check).
+        adapter_generated: none (canonical).
+        simulated: loop + branch execution depends on the host driver.
+        unsupported: none at spec level.
+
+      tools:
+        target: standalone deterministic tool CLIs
+        status: Specification-compatible
+        native: all 6 tools ship as portable CLIs with golden-file/property tests; warnings-not-verdicts contract holds.
+        adapter_generated: none (canonical).
+        simulated: none
+        unsupported: none
+
+      contracts_and_gates:
+        target: JSON schemas + gate specifications
+        status: Specification-compatible
+        native: the 4 contracts as JSON schemas; the 6 gates as documented pass_criteria + owner + indicators_from.
+        adapter_generated: none (canonical).
+        simulated: none
+        unsupported: none
+
+    open_verification:
+      - no universal-compatibility claim is made; each host runtime must confirm sub-agent isolation/parallelism and loop-driving before those features are relied on.
+
+cross_platform_summary:
+  claude_code: "native = 12 skills + 2 agents + 6 tools + commands (Specification-compatible); simulated = cross-stage workflow state + gate decisions (in-procedure); unsupported = durable workflow runtime (not needed v1); hooks Partially-supported (only if justified)."
+  codex_openai: "native = 6 tool CLIs + skill bundles (Partially-supported); simulated = both agents + all 8 workflows via orchestration skills + sequential passes; unsupported = native multi-agent isolation/parallelism (Unknown -- verify before M9); UNKNOWN = hosted bundle size/file-count limits."
+  generic: "native = 12 skills + 2 agent specs + 8 workflow specs + 6 tool CLIs + 4 schemas (Specification-compatible, canonical); simulated = isolation/parallelism/loop-driving deferred to the host runtime; unsupported = none at spec level."
+
+attestation: "no source prose copied; no card ids in public files"

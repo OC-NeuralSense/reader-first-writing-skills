@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://reader-first-writing/orchestration/schemas/change-report.schema.json",
+  "title": "Change Report",
+  "description": "Per-change classification, meaning-preservation result, and reader-effort rationale for a revision.",
+  "type": "object",
+  "properties": {
+    "original_ref": {
+      "type": "string",
+      "description": "Identifier of the version before the change."
+    },
+    "revised_ref": {
+      "type": "string",
+      "description": "Identifier of the version after the change."
+    },
+    "preservation_intent": {
+      "type": "string",
+      "enum": ["strict", "standard", "loose"]
+    },
+    "changes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "segment": {
+            "type": "string",
+            "description": "The passage that changed."
+          },
+          "change_type": {
+            "type": "string",
+            "enum": ["meaning_altering", "meaning_preserving"]
+          },
+          "reader_effort_delta": {
+            "type": "string",
+            "enum": ["lower", "neutral", "higher"]
+          },
+          "principle": {
+            "type": "string",
+            "description": "The named reader-effort or soundness principle invoked."
+          },
+          "rationale": {
+            "type": "string",
+            "description": "The reader effect that justifies the change, not taste."
+          }
+        },
+        "required": ["segment", "change_type", "reader_effort_delta", "principle", "rationale"],
+        "additionalProperties": false
+      }
+    },
+    "dropped_qualifications": {
+      "type": "array",
+      "description": "Every hedge, scope word, or condition removed, each with its original site.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "text": { "type": "string" },
+          "original_location": { "type": "string" }
+        },
+        "required": ["text", "original_location"],
+        "additionalProperties": false
+      }
+    },
+    "meaning_preserved": {
+      "type": "boolean",
+      "description": "Whether propositional meaning survived every change."
+    },
+    "role_reference_integrity": {
+      "type": "boolean",
+      "description": "True when no referent is orphaned and no agent/patient role is inverted."
+    },
+    "technical_precision_held": {
+      "type": "boolean",
+      "description": "True when technical terms kept their exact sense."
+    },
+    "fidelity_confidence": {
+      "type": "string",
+      "description": "Confidence that meaning was preserved across the changes.",
+      "enum": ["low", "medium", "high"]
+    },
+    "validation_warnings": {
+      "type": "array",
+      "description": "Warnings raised by the revision comparison.",
+      "items": { "type": "string" }
+    },
+    "recommended_next_step": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "original_ref",
+    "revised_ref",
+    "preservation_intent",
+    "changes",
+    "dropped_qualifications",
+    "meaning_preserved",
+    "role_reference_integrity",
+    "technical_precision_held",
+    "validation_warnings",
+    "recommended_next_step"
+  ],
+  "additionalProperties": false
+}

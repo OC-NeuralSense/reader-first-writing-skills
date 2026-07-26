@@ -1,0 +1,71 @@
+# Conflict resolution: what happens when two valid rules pull against each
+# other in the same passage. Mirrors methodology/00-overview.md section 3 and
+# binds every component. PUBLIC FILE: original wording only.
+
+version: 1
+constitution: methodology/constitution/writing-constitution.md
+
+# The resolution ladder for a same-passage collision between the structure
+# plane and the prose plane, or between any two applicable rules. Steps run in
+# order; the first step that resolves the collision ends it.
+ladder:
+  - step: 1
+    name: satisfy_both
+    rule: >-
+      Look for a near-equivalent construction that satisfies both rules:
+      change the voice, front a phrase, reorder constituents, split the
+      sentence, or repeat a keyword across the boundary. Most collisions
+      dissolve here.
+  - step: 2
+    name: separate_requirement_from_preference
+    rule: >-
+      Distinguish a load-bearing logical requirement (a parent must summarize
+      its children; groups must not overlap) from a mere preference (signpost
+      density, a choice between two already-valid orders). A requirement
+      outranks a preference.
+  - step: 3
+    name: judge_by_reader_effort
+    rule: >-
+      Between two arrangements that both preserve meaning, keep the one the
+      intended reader grasps with less effort, whichever plane proposed it.
+  - step: 4
+    name: fidelity_overrides
+    rule: >-
+      If the only reconciliation changes meaning, neither side wins. The
+      passage is escalated for rethinking, never quietly reworded.
+  - step: 5
+    name: human_escalation
+    rule: >-
+      A genuine unresolved conflict is flagged for a human decision with both
+      candidate arrangements and the competing rules named. The system does
+      not settle it by decree.
+
+# Standing decisions that are settled and not renegotiable per task.
+standing_decisions:
+  - id: CONFLICT.NO_PLANE_SUPREMACY
+    rule: >-
+      There is no standing "structure beats prose" or "prose beats structure"
+      rule. Structure is usually worked out first as a scheduling fact, not a
+      ranking.
+  - id: CONFLICT.RULE_STRENGTH
+    rule: >-
+      When two methodology statements disagree and the ladder does not apply,
+      the marked strength decides: Invariant over Principle over Heuristic.
+      Unmarked text is explanatory context, not a rule.
+  - id: CONFLICT.STAGE_SCOPE
+    rule: >-
+      An apparent conflict often dissolves because the two rules belong to
+      different stages (planning versus revision), different levels (document
+      versus sentence), or diagnosis versus generation. Check scope before
+      declaring a conflict.
+  - id: CONFLICT.NO_BLENDING
+    rule: >-
+      Conflicting advice is never blended into a vague compromise. Either one
+      rule applies, or the ladder runs, or the conflict escalates.
+
+escalation_report_must_include:
+  - passage_location
+  - competing_rules_named
+  - candidate_arrangements
+  - why_each_step_of_the_ladder_failed
+  - fidelity_status_of_each_candidate

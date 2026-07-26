@@ -1,0 +1,115 @@
+# Canonical Workflow Spec -- plan-document (WF-PLAN)
+# PUBLIC, provider-neutral source of truth. Platform adapters are generated from this.
+# Handoff names resolve against handoff-contracts.yaml; gate ids against quality-gates.yaml.
+# COPYRIGHT/PRIVACY: original wording only; no concept-card ids; no book locators.
+
+name: plan-document
+description: >-
+  Plan a whole document before drafting: settle the reader and situation, build
+  a validated answer-first argument, confirm the support actually carries the
+  conclusion, then set signposting density and design the ending for the genre
+  and aim. Ends with a checkable section/paragraph layout, not a loose sketch.
+depth: standard   # supports quick and deep variants
+
+triggers:
+  - "Help me plan this whole report before I write."
+  - "Turn my notes into a structured plan first."
+  - "What should this argue and in what order, before I draft?"
+non_triggers:
+  - "A draft already exists and needs assessment -> diagnose-draft / review-document."
+  - "Wants the prose written from a finished plan -> draft-prose."
+
+inputs:
+  required:
+    - brief_or_topic
+  optional:
+    - audience_hints
+    - notes_or_claims
+    - genre
+    - document_length
+    - read_mode
+
+stages:
+  - id: p1
+    responsibility: >-
+      Fix the reader, the situation, the writer's aim, and the genre before any
+      content decision is made.
+    execution:
+      type: skill
+      component: frame-the-brief
+    depends_on: []
+    parallel_with: []
+    input_contract: none
+    output_contract: reader-frame
+    gate: none
+    on_failure: request clarification and do not proceed on a hollow frame
+    on_ambiguity: ask the audience question first; bias toward assuming too little
+
+  - id: p2
+    responsibility: >-
+      Assemble the validated answer-first argument: one governing question, one
+      controlling idea, screened and grouped claims in a summary-before-detail
+      hierarchy.
+    execution:
+      type: skill
+      component: build-argument
+    depends_on: [p1]
+    parallel_with: []
+    input_contract: reader-frame
+    output_contract: argument-blueprint
+    gate: GATE-STRUCTURE
+    on_failure: loop back to p2 to re-group / re-order / re-summarize (structure-gate loop)
+    on_ambiguity: surface competing governing questions and ask which one to serve
+
+  - id: p3
+    responsibility: >-
+      Confirm each parent-child link genuinely follows and the support really
+      carries the conclusion; report, do not rewrite.
+    execution:
+      type: skill
+      component: test-argument
+    depends_on: [p2]
+    parallel_with: []
+    input_contract: argument-blueprint
+    output_contract: defect-report
+    gate: GATE-SOUNDNESS
+    on_failure: return to p2 to repair the structure
+    on_ambiguity: mark the inference type (chain vs class) as unresolved
+
+  - id: p4
+    responsibility: >-
+      Set apparatus density to genre, length, and read-mode, design the ending
+      for the aim, and map the validated hierarchy onto an ordered section /
+      paragraph layout.
+    execution:
+      type: skill
+      component: shape-and-close
+    depends_on: [p3]
+    parallel_with: []
+    input_contract: argument-blueprint
+    output_contract: argument-blueprint
+    gate: none
+    on_failure: return an apparatus warning (heading without a real claim, density mismatched to read-mode)
+    on_ambiguity: ask read-mode (scanned vs linear); leave signpost density and close as ratifiable parameters
+
+completion_conditions:
+  - every planned section references a hierarchy node
+  - apparatus density set with reference to genre and read-mode
+  - soundness gate passed
+failure_conditions:
+  - sections invented that no claim supports
+  - apparatus set without reference to genre or read-mode
+  - planning started before the reader-frame is settled
+quality_metrics:
+  - node coverage of sections
+  - soundness gate pass
+  - apparatus-density value present
+
+notes:
+  loops:
+    - structure-gate loop: p2 self-loops on GATE-STRUCTURE block; exit is a passing structure gate advancing to p3
+    - soundness loop: p3 blocks route back to p2; exit is a passing soundness gate advancing to p4
+  terminal: p4
+  reachable_completion: true
+
+attestation: "no source prose copied; no card ids in public files"

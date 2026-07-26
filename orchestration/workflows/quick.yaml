@@ -1,0 +1,95 @@
+# Canonical Workflow Spec -- quick-pass (WF-QUICK)
+# PUBLIC, provider-neutral source of truth. Platform adapters are generated from this.
+# Handoff names resolve against handoff-contracts.yaml; gate ids against quality-gates.yaml.
+# COPYRIGHT/PRIVACY: original wording only; no concept-card ids; no book locators.
+
+name: quick-pass
+description: >-
+  A fast, deliberately shallow once-over that surfaces the most visible surface
+  defects and the single biggest structural risk, then applies only the
+  highest-value surface fixes. It always declares its own non-exhaustiveness and
+  is never a substitute for a real review or a ship decision.
+depth: quick
+
+triggers:
+  - "Just give it a fast once-over."
+  - "Quick sanity check before I move on."
+  - "Skim this and flag anything obvious."
+non_triggers:
+  - "Wants a thorough, exhaustive, multi-perspective review -> deep-review."
+  - "Wants a ship-ready go/no-go -> finalize."
+  - "Wants a full fault list without fixes -> diagnose-draft (standard)."
+
+inputs:
+  required:
+    - draft
+  optional:
+    - audience_hints
+    - reader-frame
+
+stages:
+  - id: q1
+    responsibility: >-
+      Sketch a light reader model only if audience cues are cheaply available;
+      never stall a fast pass to chase audience facts.
+    execution:
+      type: skill
+      component: frame-the-brief
+    depends_on: []
+    parallel_with: []
+    input_contract: none
+    output_contract: reader-frame
+    gate: none
+    on_failure: proceed without a frame
+    on_ambiguity: proceed; do not block a fast pass to resolve audience facts
+
+  - id: q2
+    responsibility: >-
+      Report the top surface defects plus the one most visible structural risk;
+      do not open a deep investigation.
+    execution:
+      type: skill
+      component: diagnose-draft
+    depends_on: [q1]
+    parallel_with: []
+    input_contract: reader-frame
+    output_contract: defect-report
+    gate: none
+    on_failure: return only what was found
+    on_ambiguity: note the risk in one line; do not deep-dive
+
+  - id: q3
+    responsibility: >-
+      Apply only the highest-value surface repairs; leave anything requiring
+      structural work or careful judgment untouched and flagged.
+    execution:
+      type: skill
+      component: revise-prose
+    depends_on: [q2]
+    parallel_with: []
+    input_contract: defect-report
+    output_contract: change-report
+    gate: GATE-FIDELITY
+    on_failure: leave the passage as-is and report the issue
+    on_ambiguity: skip the change and flag it for a fuller pass
+
+completion_conditions:
+  - top surface defects fixed
+  - single most visible structural risk named
+  - non-exhaustiveness explicitly stated to the user
+failure_conditions:
+  - presenting the quick pass as a full quality gate or a ship decision
+  - silently rewriting past a surface fix into structural change
+quality_metrics:
+  - surface-fix count
+  - structural-risk-flagged (yes/no)
+  - exhaustiveness-disclaimer present
+
+notes:
+  gate_note: >-
+    q3 runs only a light meaning-preservation check (GATE-FIDELITY, light).
+    This is NOT the release gate and must never be reported as one.
+  terminal: q3
+  reachable_completion: true
+
+attestation: "no source prose copied; no card ids in public files"

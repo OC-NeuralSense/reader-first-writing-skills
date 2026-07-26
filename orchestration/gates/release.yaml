@@ -1,0 +1,22 @@
+name: release
+id: GATE-RELEASE
+purpose: >-
+  Make the final go / no-go decision, confirming zero blocking defects and that
+  meaning was preserved across every prior edit.
+applies_after: finalize (review-document audit) with human ratification
+owner: finalize with human ratification
+indicators_from: [source-overlap-guard, revision-comparator, outline-validator]
+pass_criteria:
+  - blocking and non-blocking defects are separated, with zero blocking defects at go
+  - comprehension, credibility, soundness, and correctness are each judged acceptable
+  - meaning preservation is confirmed across all prior edits, with the FIDELITY gate green
+  - disputed usage and punctuation are settled, and grammar is distinguished from register
+  - apparatus density is locked to genre, with no protected-source or forbidden-id overlap
+fail_action: >-
+  no-go; each blocking defect re-enters the pipeline at its owning stage.
+severity: blocking
+ratifiable_parameters: [signposting_density, emotive_close_force, acceptance_thresholds]
+note: >-
+  Release cannot pass unless the FIDELITY gate is green. The FIDELITY gate is
+  supreme and overrides every other resolution, so a meaning-altering edit blocks
+  release regardless of any other criterion being met.

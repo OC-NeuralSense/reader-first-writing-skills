@@ -1,0 +1,204 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://reader-first-writing/orchestration/schemas/argument-blueprint.schema.json",
+  "title": "Argument Blueprint",
+  "description": "The validated argument object: an answer-first hierarchy of grouped, labeled, screened claims plus the section-and-paragraph layout that will carry them.",
+  "type": "object",
+  "properties": {
+    "reader_ref": {
+      "type": "string",
+      "description": "Identifier of the reader frame this blueprint was built against."
+    },
+    "purpose": {
+      "type": "string",
+      "enum": ["reveal", "act"]
+    },
+    "governing_question": {
+      "type": "string",
+      "description": "Exactly one question, scaled to the reader's gap."
+    },
+    "controlling_idea": {
+      "type": "object",
+      "description": "The one-line lead answer and the subject/point it asserts.",
+      "properties": {
+        "answer": {
+          "type": "string",
+          "description": "The one-line lead answer to the governing question."
+        },
+        "subject": {
+          "type": "string",
+          "description": "What the answer concerns."
+        },
+        "point": {
+          "type": "string",
+          "description": "What is asserted about the subject."
+        }
+      },
+      "required": ["answer", "subject", "point"],
+      "additionalProperties": false
+    },
+    "claims": {
+      "type": "array",
+      "description": "Every node in the argument tree, each screened for support.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "text": { "type": "string" },
+          "type": {
+            "type": "string",
+            "enum": ["conclusion", "reason", "evidence", "example", "objection", "limitation"]
+          },
+          "parent_id": {
+            "type": ["string", "null"],
+            "description": "Parent claim id; null only for the controlling idea."
+          },
+          "support_status": {
+            "type": "string",
+            "enum": ["supported", "partial", "unsupported", "unknown"]
+          }
+        },
+        "required": ["id", "text", "type", "parent_id", "support_status"],
+        "additionalProperties": false
+      }
+    },
+    "groups": {
+      "type": "array",
+      "description": "Sibling claims gathered under substantive labels, one logical kind each.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "description": "Substantive plural-noun label, never a bare count or category topper."
+          },
+          "logical_kind": {
+            "type": "string",
+            "description": "The single kind the members share."
+          },
+          "members": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "ordering_principle": {
+            "type": "string",
+            "enum": ["argument_chain", "chronological", "part_structure", "degree"]
+          },
+          "completeness_note": {
+            "type": "string",
+            "description": "Whether any obvious member is missing."
+          }
+        },
+        "required": ["label", "logical_kind", "members", "ordering_principle"],
+        "additionalProperties": false
+      }
+    },
+    "answer_placement": {
+      "type": "string",
+      "description": "reasoning_first is used only when disagreement is expected.",
+      "enum": ["answer_first", "reasoning_first"]
+    },
+    "opening_plan": {
+      "type": "object",
+      "properties": {
+        "context": { "type": "string" },
+        "tension": { "type": "string" },
+        "question": { "type": "string" },
+        "answer": { "type": "string" }
+      },
+      "required": ["context", "tension", "question", "answer"],
+      "additionalProperties": false
+    },
+    "closing_plan": {
+      "type": "string",
+      "enum": ["presentational", "action_seeking"]
+    },
+    "apparatus_density": {
+      "type": "string",
+      "enum": ["light", "moderate", "heavy"]
+    },
+    "layout_map": {
+      "type": "object",
+      "description": "The ordered section-and-paragraph map the draft will follow.",
+      "properties": {
+        "sections": {
+          "type": "array",
+          "description": "Sections in the order they appear in the document.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Section identifier."
+              },
+              "role": {
+                "type": "string",
+                "description": "The function this section serves in the argument."
+              },
+              "contained_claims": {
+                "type": "array",
+                "description": "Claim ids this section carries.",
+                "items": { "type": "string" }
+              },
+              "paragraph_plan": {
+                "type": "array",
+                "description": "Ordered paragraph-level plan within the section.",
+                "items": { "type": "string" }
+              }
+            },
+            "required": ["id", "role", "contained_claims", "paragraph_plan"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": ["sections"],
+      "additionalProperties": false
+    },
+    "drop_list": {
+      "type": "array",
+      "description": "Claim ids explicitly excluded as irrelevant.",
+      "items": { "type": "string" }
+    },
+    "assumptions": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "ambiguities": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "evidence_gaps": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "blueprint_confidence": {
+      "type": "string",
+      "description": "Overall confidence in the validated argument.",
+      "enum": ["low", "medium", "high"]
+    },
+    "validation_warnings": {
+      "type": "array",
+      "description": "Warnings raised by the outline check and soundness pass.",
+      "items": { "type": "string" }
+    },
+    "recommended_next_step": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "reader_ref",
+    "purpose",
+    "governing_question",
+    "controlling_idea",
+    "claims",
+    "groups",
+    "answer_placement",
+    "layout_map",
+    "assumptions",
+    "ambiguities",
+    "evidence_gaps",
+    "validation_warnings",
+    "recommended_next_step"
+  ],
+  "additionalProperties": false
+}

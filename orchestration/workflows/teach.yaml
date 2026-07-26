@@ -1,0 +1,95 @@
+# Canonical Workflow Spec -- teach (WF-TEACH)
+# PUBLIC, provider-neutral source of truth. Platform adapters are generated from this.
+# Handoff names resolve against handoff-contracts.yaml; gate ids against quality-gates.yaml.
+# COPYRIGHT/PRIVACY: original wording only; no concept-card ids; no book locators.
+
+name: teach
+description: >-
+  Walk a learner through improving their own draft so they can repeat the moves
+  unaided. Diagnose the draft naming each defect and its test, stage the guided
+  revision so every move carries defect + test + rationale, then explain why each
+  change lowered reader effort.
+depth: teaching
+
+triggers:
+  - "Walk me through improving this so I learn to do it myself."
+  - "Teach me why these edits work."
+  - "Coach me through fixing this draft."
+non_triggers:
+  - "Just wants the document fixed, not taught -> revise / restructure."
+
+inputs:
+  required:
+    - learner_draft
+  optional:
+    - learner_level
+    - reader-frame
+
+stages:
+  - id: t1
+    responsibility: >-
+      Diagnose the learner's draft, naming each defect and the concrete test it
+      fails, scaled to the learner's level.
+    execution:
+      type: skill
+      component: diagnose-draft
+    depends_on: []
+    parallel_with: []
+    input_contract: none
+    output_contract: defect-report
+    gate: none
+    on_failure: re-scope the diagnosis to the learner's level
+    on_ambiguity: ask the learner's current skill level
+
+  - id: t2
+    responsibility: >-
+      Stage the guided revision from t1's findings so each move names its defect,
+      its failed test, and the principle behind the fix -- teaching from the
+      faults already found rather than re-diagnosing.
+    execution:
+      type: skill
+      component: teach-revision
+    depends_on: [t1]
+    parallel_with: []
+    input_contract: defect-report
+    output_contract: change-report
+    gate: GATE-CLARITY
+    on_failure: simplify the step so the learner can re-apply it unaided
+    on_ambiguity: present a valid alternative form, never one true form
+
+  - id: t3
+    responsibility: >-
+      Explain, per change, why the revision lowered reader effort, tying each
+      reason to a named reader effect rather than taste.
+    execution:
+      type: skill
+      component: compare-versions
+    depends_on: [t2]
+    parallel_with: []
+    input_contract: change-report
+    output_contract: change-report
+    gate: GATE-FIDELITY
+    on_failure: attach the missing per-change rationale
+    on_ambiguity: none
+
+completion_conditions:
+  - each step names defect + test + rationale
+  - the learner could re-apply the test unaided
+failure_conditions:
+  - fixes applied silently
+  - overwhelming the learner
+  - prescribing one form as the only correct one
+quality_metrics:
+  - steps with complete defect/test/rationale fields
+  - learner-reapplicability
+
+notes:
+  non_redundancy: >-
+    t2 consumes t1's defect-report and does NOT re-diagnose; the three stages stay
+    distinct (find -> teach the fix -> explain the effect).
+  loops:
+    - t2 too-hard step -> simplify and re-stage; exit is a step the learner can re-apply
+  terminal: t3
+  reachable_completion: true
+
+attestation: "no source prose copied; no card ids in public files"

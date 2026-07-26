@@ -1,0 +1,120 @@
+# Canonical Workflow Spec -- finalize (WF-FINALIZE)
+# PUBLIC, provider-neutral source of truth. Platform adapters are generated from this.
+# Handoff names resolve against handoff-contracts.yaml; gate ids against quality-gates.yaml.
+# COPYRIGHT/PRIVACY: original wording only; no concept-card ids; no book locators.
+
+name: finalize
+description: >-
+  The release-oriented audit. Judge the near-final document with the lens its
+  genre calls for, confirm meaning was preserved across every prior edit, settle
+  disputed usage and check copyright safety, then lock apparatus density and make
+  the human go/no-go decision at the release gate.
+depth: audit
+
+triggers:
+  - "Is this ready to ship?"
+  - "Do a final release check on this."
+  - "Sign this off if it's good."
+non_triggers:
+  - "Still drafting or restructuring -> plan / restructure / revise."
+  - "Wants a multi-perspective critique, not a release decision -> deep-review."
+
+inputs:
+  required:
+    - near_final_document
+    - reader-frame
+  optional:
+    - genre
+    - communicative_aim
+    - preservation_intent
+    - acceptance_thresholds
+    - protected_source_excerpts
+    - original_version
+
+stages:
+  - id: f1
+    responsibility: >-
+      Make the genre-routed quality judgment (comprehension, credibility,
+      soundness, correctness) and separate blocking from non-blocking defects.
+    execution:
+      type: skill
+      component: review-document
+    depends_on: []
+    parallel_with: []
+    input_contract: reader-frame
+    output_contract: defect-report
+    gate: none
+    on_failure: route each blocking defect to its owning stage
+    on_ambiguity: request acceptance thresholds if unstated
+
+  - id: f2
+    responsibility: >-
+      Confirm meaning-preservation across all prior edits by comparing the
+      original against the near-final claim and qualifier sets.
+    execution:
+      type: tool
+      component: revision-comparator
+    depends_on: [f1]
+    parallel_with: []
+    input_contract: change-report
+    output_contract: change-report
+    gate: GATE-FIDELITY
+    on_failure: block; fidelity rollback to the owning stage
+    on_ambiguity: route residual role/sense doubt to independent-reviewer
+
+  - id: f3
+    responsibility: >-
+      Settle disputed usage and punctuation and check copyright safety, flagging
+      any protected-source or forbidden-id overlap.
+    execution:
+      type: tool
+      component: source-overlap-guard + review-document usage check
+    depends_on: [f2]
+    parallel_with: []
+    input_contract: defect-report
+    output_contract: defect-report
+    gate: GATE-RELEASE
+    on_failure: block release; fix the flagged spans
+    on_ambiguity: distinguish grammar from register, and ungrammaticality from ambiguity
+
+  - id: f4
+    responsibility: >-
+      Lock apparatus density to genre and make the ratified go/no-go decision,
+      listing any blocking defect that forces a no-go.
+    execution:
+      type: human-check
+      component: release gate
+    depends_on: [f3]
+    parallel_with: []
+    input_contract: defect-report
+    output_contract: defect-report
+    gate: GATE-RELEASE
+    on_failure: no-go; list the blocking defects
+    on_ambiguity: a late defect re-enters at its owning stage
+
+completion_conditions:
+  - blocking and non-blocking defects separated
+  - meaning-preservation confirmed across all prior edits
+  - disputed usage settled and copyright safety cleared
+  - apparatus density locked and a ratified go/no-go recorded
+failure_conditions:
+  - shipping with an unresolved soundness or meaning defect
+  - passing a fluent-but-unsound document
+quality_metrics:
+  - blocking-defect count = 0 at go
+  - meaning-preservation pass
+  - usage and apparatus checks pass
+
+notes:
+  gate_sequence: >-
+    All prior gates funnel into GATE-RELEASE. This workflow terminates at the
+    release gate; f3 checks its usage/overlap preconditions and f4 is the ratified
+    go/no-go.
+  loops:
+    - f2 fidelity block -> rollback to owning stage; exit is a passing fidelity gate
+    - f1/f4 blocking defects -> re-enter at their owning stage (transition, not a new workflow)
+  terminal: f4
+  terminal_gate: GATE-RELEASE
+  reachable_completion: true
+
+attestation: "no source prose copied; no card ids in public files"

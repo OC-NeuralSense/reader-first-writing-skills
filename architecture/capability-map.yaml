@@ -1,0 +1,387 @@
+# Capability Map (M4 / Phase 4)
+# PUBLIC FILE -- tracked in git.
+# Enumerates the distinct CAPABILITIES the writing system must have.
+# It does NOT assign skills, agents, or tools (that is the next milestone).
+#
+# COPYRIGHT/PRIVACY: This file contains NO source-card ids, NO book
+# chapter/section locators, and uses ORIGINAL capability names only.
+# Capability -> source traceability lives in the PRIVATE
+# development-private/traceability/concept-to-capability.yaml.
+
+meta:
+  produced_by: capability-cataloger
+  stage: "M4 / Phase 4"
+  derives_from: integrated writing-process model (private)
+  product_decisions_honored:
+    v1_genres: [business_analytical, academic, general_explanatory, technical_documentation]
+    clarity_stance: integrated  # structure and prose are co-equal, first-class sources of clarity
+    scope: single_written_documents  # oral/slide delivery out of v1
+  planes: [structure, prose, shared]
+  functions: [plan, structure, draft, diagnose, revise, evaluate, validate]
+  genre_note: >-
+    "universal" = the capability applies to all four v1 genres with the same
+    intent (it may still be parameterized by audience or stage).
+    "genre_specific" = the capability's default BEHAVIOR changes by genre.
+  counts:
+    capabilities_total: 37
+    shared_plane: 11
+    structure_plane: 15
+    prose_plane: 11
+    genre_specific: 2
+    universal: 35
+
+capabilities:
+
+  # ===================================================================
+  # SHARED PLANE -- read from the one reader model; neither plane may
+  # contradict them; they gate or judge both planes.
+  # ===================================================================
+  - id: CAP-01
+    name: Reader Profile Construction
+    description: Estimate the absent reader's prior knowledge, standing question, expertise level, and the writer's aim toward them.
+    writing_levels: [document, section]
+    functions: [plan, diagnose]
+    plane: shared
+    genres: universal
+    scope: universal
+
+  - id: CAP-02
+    name: Situation Framing
+    description: Establish the triggering circumstance and the unresolved tension that makes the document necessary before any content decision.
+    writing_levels: [document]
+    functions: [plan]
+    plane: shared
+    genres: universal
+    scope: universal
+
+  - id: CAP-03
+    name: Communicative-Aim Classification
+    description: Determine whether the document aims to reveal a truth or to drive an action, which routes ordering and closing decisions.
+    writing_levels: [document]
+    functions: [plan, evaluate]
+    plane: shared
+    genres: universal
+    scope: universal
+
+  - id: CAP-04
+    name: Genre Routing
+    description: Assign or confirm the document type among the supported set so downstream defaults (apparatus, close, tolerance) can be keyed on it.
+    writing_levels: [document]
+    functions: [plan]
+    plane: shared
+    genres: universal
+    scope: universal
+
+  - id: CAP-05
+    name: Expert-Blind-Spot Detection
+    description: Flag passages that silently assume knowledge, context, or inferences the intended reader does not have.
+    writing_levels: [document, section, sentence]
+    functions: [diagnose, revise]
+    plane: shared
+    genres: universal
+    scope: universal
+
+  - id: CAP-06
+    name: Mental-Picture Test
+    description: Check whether the reader can form a concrete mental image of the content, treating "can they picture this?" as a comprehension gate.
+    writing_levels: [sentence, paragraph, word]
+    functions: [diagnose, evaluate, revise]
+    plane: shared
+    genres: universal
+    scope: universal
+
+  - id: CAP-07
+    name: Meaning-Preservation Verification
+    description: Confirm every transformation held propositional meaning, participant roles, references, and technical sense constant.
+    writing_levels: [word, sentence, section, document]
+    functions: [validate]
+    plane: shared
+    genres: universal
+    scope: universal
+
+  - id: CAP-08
+    name: Argument-Soundness and Content-Integrity Check
+    description: Verify facts, premises, and inferential steps; detect reasoning defects; ensure counter-evidence is handled fairly and irrelevant material is cut.
+    writing_levels: [document, section]
+    functions: [diagnose, evaluate, validate]
+    plane: shared
+    genres: universal
+    scope: universal
+
+  - id: CAP-09
+    name: Holistic Quality Judgment
+    description: Judge the finished whole against reader-facing goals -- comprehension, credibility, soundness, and correctness -- accepting several valid forms.
+    writing_levels: [document]
+    functions: [evaluate]
+    plane: shared
+    genres: universal
+    scope: universal
+
+  - id: CAP-10
+    name: Release and Finalization Gate
+    description: Settle disputed usage and punctuation, lock apparatus density to genre, and release; late defects re-enter at their owning stage.
+    writing_levels: [document]
+    functions: [validate]
+    plane: shared
+    genres: universal
+    scope: universal
+
+  - id: CAP-11
+    name: Cross-Plane Conflict Arbitration
+    description: Reconcile same-passage structure-vs-prose conflicts under the supreme criterion of least reader effort; escalate genuinely unresolved cases rather than defaulting to either plane.
+    writing_levels: [section, paragraph, sentence]
+    functions: [evaluate, revise]
+    plane: shared
+    genres: universal
+    scope: universal
+
+  # ===================================================================
+  # STRUCTURE PLANE -- document-level logical architecture.
+  # ===================================================================
+  - id: CAP-12
+    name: Governing-Question Definition
+    description: Reduce the document to the single question it exists to answer, scaled to the reader's knowledge gap.
+    writing_levels: [document, section]
+    functions: [plan, structure]
+    plane: structure
+    genres: universal
+    scope: universal
+
+  - id: CAP-13
+    name: Controlling-Idea Articulation
+    description: State the one-line lead answer, separating the subject (what it concerns) from the point (what is asserted).
+    writing_levels: [document, section]
+    functions: [structure]
+    plane: structure
+    genres: universal
+    scope: universal
+
+  - id: CAP-14
+    name: Claim and Evidence Inventory
+    description: Gather candidate claims and supporting evidence and screen each for soundness and relevance before it enters the architecture.
+    writing_levels: [document, section]
+    functions: [plan]
+    plane: structure
+    genres: universal
+    scope: universal
+
+  - id: CAP-15
+    name: Argument-Hierarchy Construction
+    description: Assemble screened claims into a summary-before-detail hierarchy where each parent is a genuine conclusion distilled from its children.
+    writing_levels: [document, section]
+    functions: [structure]
+    plane: structure
+    genres: universal
+    scope: universal
+
+  - id: CAP-16
+    name: Grouping-Validity Enforcement
+    description: Ensure each group is one logical kind, that its members do not overlap, and that the set is complete.
+    writing_levels: [section, paragraph]
+    functions: [structure, validate, evaluate]
+    plane: structure
+    genres: universal
+    scope: universal
+
+  - id: CAP-17
+    name: Within-Group Ordering
+    description: Order the members of each group by the analytical act that formed it (argument chain, time, part-structure, or degree), reconciled with reader load.
+    writing_levels: [section, paragraph]
+    functions: [structure, revise]
+    plane: structure
+    genres: universal
+    scope: universal
+
+  - id: CAP-18
+    name: Answer-Placement Decision
+    description: Choose answer-first vs reasoning-first presentation from the reader's expected reaction, inverting only when the top point will surprise or unsettle.
+    writing_levels: [document, section]
+    functions: [structure]
+    plane: structure
+    genres: universal
+    scope: universal
+
+  - id: CAP-19
+    name: Faithful-Summary Validation
+    description: Ensure each parent genuinely summarizes its children and reject empty count-or-category toppers that carry no real insight.
+    writing_levels: [document, section]
+    functions: [validate, diagnose]
+    plane: structure
+    genres: universal
+    scope: universal
+
+  - id: CAP-20
+    name: Opening Architecture
+    description: Build the context-tension-question-answer opening derived backward from the settled answer, asserting only ground the reader accepts.
+    writing_levels: [document, section]
+    functions: [structure, plan]
+    plane: structure
+    genres: universal
+    scope: universal
+
+  - id: CAP-21
+    name: Section and Paragraph Layout Mapping
+    description: Map the validated hierarchy onto sections and paragraphs, placing divisions at genuine joints and planning inter-block bridges.
+    writing_levels: [document, section, paragraph]
+    functions: [structure]
+    plane: structure
+    genres: universal
+    scope: universal
+
+  - id: CAP-22
+    name: Signposting and Apparatus Calibration
+    description: Set heading, numbering, and indentation density to genre, length, and read-mode, requiring every heading or topic sentence to carry a real claim.
+    writing_levels: [document, section]
+    functions: [structure, revise]
+    plane: structure
+    genres: [business_analytical, academic, general_explanatory, technical_documentation]
+    scope: genre_specific
+    genre_behavior: >-
+      Heavier explicit scaffolding for long scanned/navigated documents
+      (technical documentation, business decision briefs); lighter prose-only
+      transitions for short linear general-explanatory pieces; academic per
+      venue convention.
+
+  - id: CAP-23
+    name: Block-Level Bridge Design
+    description: Link major sections and groups with scoped mini-openings or by echoing a key term across the boundary, linking ideas rather than narrating structure.
+    writing_levels: [section, paragraph]
+    functions: [structure, draft, revise]
+    plane: structure
+    genres: universal
+    scope: universal
+
+  - id: CAP-24
+    name: Structural Diagnosis
+    description: Audit the argument tree for parent-summary validity, group completeness and non-overlap, and orphan claims that map to no parent.
+    writing_levels: [document, section]
+    functions: [diagnose, validate]
+    plane: structure
+    genres: universal
+    scope: universal
+
+  - id: CAP-25
+    name: Structural Revision
+    description: Repair structural defects by re-grouping, re-ordering, re-summarizing, or cutting claims, holding meaning constant across the change.
+    writing_levels: [document, section]
+    functions: [revise]
+    plane: structure
+    genres: universal
+    scope: universal
+
+  - id: CAP-26
+    name: Closing and Call-to-Action Design
+    description: Design the ending -- a presentational close that reveals a truth or a calibrated action-seeking close that moves the reader toward a decision.
+    writing_levels: [document, section]
+    functions: [structure, draft, revise]
+    plane: structure
+    genres: [business_analytical, academic, general_explanatory, technical_documentation]
+    scope: genre_specific
+    genre_behavior: >-
+      Action-seeking close with calibrated force is legitimate for
+      business/analytical decision documents; academic, general-explanatory,
+      and technical documentation default to a presentational, non-emoting close.
+
+  # ===================================================================
+  # PROSE PLANE -- sentence and paragraph cognition.
+  # ===================================================================
+  - id: CAP-27
+    name: Prose Drafting
+    description: Render the approved structure into continuous prose, treating the draft as revisable raw material rather than a finished object.
+    writing_levels: [paragraph, sentence]
+    functions: [draft]
+    plane: prose
+    genres: universal
+    scope: universal
+
+  - id: CAP-28
+    name: Sentence-Geometry Optimization
+    description: Shape sentences for easy parsing -- favor right-branching, avoid deep center-embedding, defuse misparse traps, and manage end-weight.
+    writing_levels: [sentence, word]
+    functions: [structure, revise, diagnose]
+    plane: prose
+    genres: universal
+    scope: universal
+
+  - id: CAP-29
+    name: Coherence and Reference Management
+    description: Maintain topic continuity, recoverable coherence relations, unambiguous reference and definiteness, untangled negation, and consistent naming.
+    writing_levels: [sentence, paragraph, word]
+    functions: [draft, revise, diagnose]
+    plane: prose
+    genres: universal
+    scope: universal
+
+  - id: CAP-30
+    name: Information-Flow Ordering
+    description: Arrange constituents given-before-new and by end-weight, reaching for a reordering construction when the two principles collide rather than sacrificing either.
+    writing_levels: [sentence, paragraph]
+    functions: [revise, structure]
+    plane: prose
+    genres: universal
+    scope: universal
+
+  - id: CAP-31
+    name: Concrete Word Choice and De-nominalization
+    description: Prefer concrete imageable words, revive buried verbs from nominalizations, and cut packaging abstractions.
+    writing_levels: [word, sentence]
+    functions: [revise, draft, evaluate]
+    plane: prose
+    genres: universal
+    scope: universal
+
+  - id: CAP-32
+    name: Jargon and Abstraction Calibration
+    description: Leave undefined only terms genuinely entrenched in the reader's in-group; unpack or replace the rest, biasing toward assuming too little.
+    writing_levels: [word, sentence]
+    functions: [revise, evaluate]
+    plane: prose
+    genres: universal
+    scope: universal
+
+  - id: CAP-33
+    name: Concision Control
+    description: Remove words that carry no meaning and no parsing value while retaining a technically redundant word that blocks a misparse or marks a boundary.
+    writing_levels: [word, sentence]
+    functions: [revise]
+    plane: prose
+    genres: universal
+    scope: universal
+
+  - id: CAP-34
+    name: Passive-Voice Functional Judgment
+    description: Keep or revert each passive by its discourse function -- topic continuity, participant focus, agent omission -- not by a blanket rule.
+    writing_levels: [sentence]
+    functions: [revise, diagnose]
+    plane: prose
+    genres: universal
+    scope: universal
+
+  - id: CAP-35
+    name: Prose Diagnosis
+    description: Audit sentences for parsing traps, coherence recoverability, reference, information flow, and imageability, aided by cooling delay and outside-reader feedback.
+    writing_levels: [sentence, paragraph]
+    functions: [diagnose]
+    plane: prose
+    genres: universal
+    scope: universal
+
+  - id: CAP-36
+    name: Prose Revision
+    description: Apply sentence-level repairs -- reorder, re-reference, denominalize, concretize, tune bridges and concision -- preserving each element's role and sense.
+    writing_levels: [sentence, paragraph, word]
+    functions: [revise]
+    plane: prose
+    genres: universal
+    scope: universal
+
+  - id: CAP-37
+    name: Usage and Correctness Adjudication
+    description: Settle disputed usage, grammar, and punctuation by evolving consensus and syntax, distinguishing grammar from register and ungrammaticality from ambiguity.
+    writing_levels: [word, sentence, document]
+    functions: [evaluate, validate, revise]
+    plane: prose
+    genres: universal
+    scope: universal
+
+attestation: "no source prose copied; no card ids in public files"

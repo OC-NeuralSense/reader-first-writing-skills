@@ -1,0 +1,16 @@
+{
+  "name": "reader-first-writing-marketplace",
+  "description": "An editorial system for AI agents: skills, independent review agents, and workflows that structure, draft, diagnose, and revise documents while preserving the writer's exact meaning.",
+  "owner": {
+    "name": "OC-NeuralSense",
+    "url": "https://github.com/OC-NeuralSense"
+  },
+  "plugins": [
+    {
+      "name": "reader-first-writing",
+      "source": "./",
+      "description": "A reader-first writing system: structure, draft, diagnose, revise, and review documents across argument architecture and sentence-level prose, with fidelity-preserving revision and independent review. Routes by writing goal (plan, draft, diagnose, restructure, revise, adapt, compare, review, finalize, teach).",
+      "version": "1.0.0"
+    }
+  ]
+}

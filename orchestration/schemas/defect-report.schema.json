@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://reader-first-writing/orchestration/schemas/defect-report.schema.json",
+  "title": "Defect Report",
+  "description": "Located, test-cited defects sorted onto distinct layers, with escalations, coverage, and exhaustiveness.",
+  "type": "object",
+  "properties": {
+    "subject_ref": {
+      "type": "string",
+      "description": "Identifier of the document or passage under review."
+    },
+    "reader_ref": {
+      "type": "string",
+      "description": "Identifier of the reader frame the review was judged against."
+    },
+    "depth": {
+      "type": "string",
+      "enum": ["quick", "standard", "deep", "audit"]
+    },
+    "independent_review": {
+      "type": "boolean",
+      "description": "True when produced by an isolated reviewer."
+    },
+    "lens": {
+      "type": "string",
+      "enum": ["structure", "prose", "soundness_and_reader_fit", "all"]
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "layer": {
+            "type": "string",
+            "enum": ["structure", "prose", "soundness", "reader_fit"]
+          },
+          "location": {
+            "type": "string",
+            "description": "Anchor into the document."
+          },
+          "failed_test": {
+            "type": "string",
+            "description": "The concrete test the passage failed."
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["blocking", "non_blocking"]
+          },
+          "evidence": { "type": "string" },
+          "recommended_fix": { "type": "string" },
+          "owning_stage": {
+            "type": "string",
+            "enum": ["plan", "structure", "draft", "revise", "evaluate", "validate"]
+          },
+          "confidence": {
+            "type": "string",
+            "description": "How firmly the finding is held.",
+            "enum": ["low", "medium", "high"]
+          }
+        },
+        "required": ["id", "layer", "location", "failed_test", "severity", "evidence", "recommended_fix", "owning_stage"],
+        "additionalProperties": false
+      }
+    },
+    "escalations": {
+      "type": "array",
+      "description": "Same-passage conflicts and cross-layer trade-offs logged for arbitration.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "location": { "type": "string" },
+          "kind": {
+            "type": "string",
+            "enum": ["prose_to_structure", "same_passage_arbitration"]
+          },
+          "trade_off": { "type": "string" },
+          "unresolved": {
+            "type": "boolean",
+            "description": "True logs an open unresolved-conflict case."
+          }
+        },
+        "required": ["location", "kind", "trade_off", "unresolved"],
+        "additionalProperties": false
+      }
+    },
+    "coverage": {
+      "type": "object",
+      "description": "Which layers this report actually examined.",
+      "properties": {
+        "structure": { "type": "boolean" },
+        "prose": { "type": "boolean" },
+        "soundness": { "type": "boolean" },
+        "reader_fit": { "type": "boolean" }
+      },
+      "required": ["structure", "prose", "soundness", "reader_fit"],
+      "additionalProperties": false
+    },
+    "exhaustiveness": {
+      "type": "string",
+      "description": "A quick pass is non_exhaustive by contract.",
+      "enum": ["exhaustive", "non_exhaustive"]
+    },
+    "validation_warnings": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "recommended_next_step": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "subject_ref",
+    "reader_ref",
+    "depth",
+    "independent_review",
+    "lens",
+    "findings",
+    "coverage",
+    "exhaustiveness",
+    "validation_warnings",
+    "recommended_next_step"
+  ],
+  "additionalProperties": false
+}

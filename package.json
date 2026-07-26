@@ -1,0 +1,70 @@
+{
+  "name": "reader-first-writing-system",
+  "version": "1.0.0",
+  "private": true,
+  "description": "An open-source agentic writing system for structuring, drafting, diagnosing, and revising written work. An independent methodology, distributable to Claude Code, Codex/OpenAI, and generic agents.",
+  "type": "module",
+  "license": "Apache-2.0",
+  "author": {
+    "name": "OC-NeuralSense",
+    "url": "https://github.com/OC-NeuralSense"
+  },
+  "homepage": "https://github.com/OC-NeuralSense/reader-first-writing-skills#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/OC-NeuralSense/reader-first-writing-skills.git"
+  },
+  "bugs": {
+    "url": "https://github.com/OC-NeuralSense/reader-first-writing-skills/issues"
+  },
+  "keywords": [
+    "writing",
+    "agent-skills",
+    "claude-code",
+    "codex",
+    "llm",
+    "editing",
+    "argument-structure",
+    "prose",
+    "clean-room"
+  ],
+  "bin": {
+    "reader-first-writing": "cli/index.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "files": [
+    "skills/",
+    "agents/",
+    "orchestration/",
+    "tools/",
+    "adapters/",
+    "cli/",
+    "scripts/",
+    "methodology/",
+    "architecture/",
+    "docs/",
+    "README.md",
+    "NOTICE.md",
+    "SECURITY.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "devDependencies": {
+    "js-yaml": "^4.1.0"
+  },
+  "scripts": {
+    "guard": "node scripts/guard-private.mjs",
+    "postinstall-hooks": "node scripts/install-hooks.mjs",
+    "validate": "node scripts/validate.mjs && node tools/workflow-validator.mjs orchestration/workflows",
+    "test": "node scripts/run-tests.mjs tests",
+    "test:integration": "node scripts/run-tests.mjs tests/integration",
+    "eval": "node evals/run.mjs",
+    "build": "node scripts/build.mjs",
+    "pack": "node scripts/pack.mjs",
+    "release:check": "node scripts/release-check.mjs",
+    "deploy:manifest": "node scripts/deploy-plugin-manifest.mjs",
+    "prepublishOnly": "node scripts/release-check.mjs"
+  }
+}

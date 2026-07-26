@@ -1,0 +1,204 @@
+# Canonical Workflow Spec -- compose (WF-COMPOSE)
+# PUBLIC, provider-neutral source of truth. Platform adapters are generated from this.
+# Handoff names resolve against handoff-contracts.yaml; gate ids against quality-gates.yaml.
+# COPYRIGHT/PRIVACY: original wording only; no concept-card ids; no book locators.
+
+name: compose
+description: >-
+  Author a finished document from a brief in one end-to-end pass: settle the
+  reader, build and test the answer-first argument, draft continuous prose from
+  the validated blueprint, revise the prose under a supreme fidelity check, then
+  set signposting and design the ending. This is the plan-through-draft
+  generative path; it orchestrates existing skills and adds no new one. Where
+  WF-PLAN stops at a checkable plan, WF-COMPOSE carries that plan into drafted,
+  revised, and shaped prose.
+depth: standard   # supports deep (adds the independent-review stage)
+
+triggers:
+  - "Write me a document from these notes."
+  - "Draft a full report from this brief."
+  - "Turn this brief into a finished piece, start to finish."
+non_triggers:
+  - "Only wants the plan, not the prose -> plan-document (WF-PLAN is plan-only)."
+  - "A draft already exists and needs fixing -> revise / restructure."
+  - "Wants only a release go/no-go on a near-final document -> finalize."
+
+inputs:
+  required:
+    - brief_or_topic
+  optional:
+    - audience_hints
+    - notes_or_claims
+    - genre
+    - document_length
+    - read_mode
+    - communicative_aim
+    - preservation_intent
+    - depth
+
+stages:
+  - id: c1
+    responsibility: >-
+      Fix the reader, the situation, the writer's aim, and the genre before any
+      content decision is made.
+    execution:
+      type: skill
+      component: frame-the-brief
+    depends_on: []
+    parallel_with: []
+    input_contract: none
+    output_contract: reader-frame
+    gate: none
+    on_failure: request clarification and do not proceed on a hollow frame
+    on_ambiguity: ask the audience question first; bias toward assuming too little
+
+  - id: c2
+    responsibility: >-
+      Assemble the validated answer-first argument from the frame and the notes:
+      one governing question, one controlling idea, screened and grouped claims
+      in a summary-before-detail hierarchy.
+    execution:
+      type: skill
+      component: build-argument
+    depends_on: [c1]
+    parallel_with: []
+    input_contract: reader-frame
+    output_contract: argument-blueprint
+    gate: GATE-STRUCTURE
+    on_failure: loop back to c2 to re-group / re-order / re-summarize (structure-gate loop)
+    on_ambiguity: surface competing governing questions and ask which one to serve
+
+  - id: c3
+    responsibility: >-
+      Confirm each parent-child link genuinely follows and the support really
+      carries the conclusion before any prose is drafted against it; report, do
+      not rewrite.
+    execution:
+      type: skill
+      component: test-argument
+    depends_on: [c2]
+    parallel_with: []
+    input_contract: argument-blueprint
+    output_contract: defect-report
+    gate: GATE-SOUNDNESS
+    on_failure: return to c2 to repair the structure (soundness loop)
+    on_ambiguity: mark the inference type (chain vs class) as unresolved
+
+  - id: c4
+    responsibility: >-
+      Draft continuous prose from the validated blueprint, rendering every node
+      as revisable raw material and smuggling in no claim the blueprint does not
+      contain. The draft must be dash-free and in the expert-human register per
+      methodology/64-house-style.md.
+    execution:
+      type: skill
+      component: draft-prose
+    depends_on: [c3]
+    parallel_with: []
+    input_contract: argument-blueprint
+    output_contract: none
+    gate: none
+    on_failure: return to c2 if a node cannot be drafted without inventing support
+    on_ambiguity: keep jargon inside the reader's mastered vocabulary; flag any gap
+
+  - id: c5
+    responsibility: >-
+      Revise the drafted prose for flow, clarity, length, and thinness without
+      changing meaning, then confirm no qualifier, role, or referent was dropped.
+      The revised prose stays dash-free and in the expert-human register per
+      methodology/64-house-style.md.
+    execution:
+      type: skill
+      component: revise-prose
+    depends_on: [c4]
+    parallel_with: []
+    input_contract: none
+    output_contract: change-report
+    gate: GATE-FIDELITY
+    on_failure: reject a meaning-altering edit; fidelity rollback re-drafts the passage under c5
+    on_ambiguity: escalate the unresolved same-passage structure-vs-prose case; prose-to-structure escalation may route to restructure
+
+  - id: c6
+    responsibility: >-
+      Set apparatus density to genre, length, and read-mode, design the ending
+      for the aim, and map the validated hierarchy onto an ordered section /
+      paragraph layout. Obey the house style: every heading carries a real claim
+      and the shaped prose stays dash-free per methodology/64-house-style.md.
+    execution:
+      type: skill
+      component: shape-and-close
+    depends_on: [c5]
+    parallel_with: []
+    input_contract: argument-blueprint
+    output_contract: argument-blueprint
+    gate: none
+    on_failure: return an apparatus warning (heading without a real claim, density mismatched to read-mode)
+    on_ambiguity: ask read-mode (scanned vs linear); leave signpost density and close as ratifiable parameters
+
+  - id: c7
+    responsibility: >-
+      Deep-depth only: hand the shaped document to independent reviewers on their
+      own lenses and reconcile the findings, so a generated document is not shipped
+      on self-review alone. At standard depth this stage is skipped and c6 is
+      terminal; at audit depth the caller hands off to finalize (WF-FINALIZE)
+      rather than adding a release gate here.
+    execution:
+      type: agent
+      component: review-orchestrator
+    depends_on: [c6]
+    parallel_with: []
+    input_contract: reader-frame
+    output_contract: defect-report
+    gate: GATE-SOUNDNESS
+    on_failure: route each blocking defect back to its owning stage (c2 for structure, c5 for prose)
+    on_ambiguity: escalate the unresolved same-passage conflict; request preservation_intent if unstated
+    depth_gated: deep
+
+completion_conditions:
+  - reader-frame settled before any content decision
+  - structure and soundness gates passed before drafting
+  - drafted prose renders every blueprint node and invents no unsupported claim
+  - meaning and qualifiers preserved through revision under the fidelity gate
+  - apparatus density set with reference to genre and read-mode, and the ending designed
+  - drafted prose is dash-free and in the expert-human register per the house style
+
+failure_conditions:
+  - drafting started before the structure and soundness gates pass
+  - prose that introduces a claim or relation the blueprint does not contain
+  - a revision that inverts a role, drops a referent, or shifts a claim
+  - a dash used as punctuation, or LLM-register tics, surviving into the draft
+  - apparatus set without reference to genre or read-mode
+
+quality_metrics:
+  - node coverage of drafted prose
+  - soundness gate pass before drafting
+  - qualifier-set equality across revision
+  - apparatus-density value present
+  - dash-free draft (no em/en dash as punctuation)
+
+notes:
+  output_contract_note: >-
+    The prose drafted at c4 and revised at c5 must be dash-free (no em or en dash
+    as punctuation; compound hyphens are word formation and allowed) and in the
+    expert-human register, per methodology/64-house-style.md. A surviving dash is
+    a defect to fix, not a stylistic taste to defend.
+  relation_to_plan: >-
+    WF-PLAN is plan-only and stops at a checkable section/paragraph layout.
+    WF-COMPOSE is the plan-through-draft path: it reuses the same frame ->
+    argue -> test -> shape spine and adds draft-prose and revise-prose so the
+    output is finished prose, not a plan. No new skill or agent is introduced.
+  loops:
+    - structure-gate loop: c2 self-loops on GATE-STRUCTURE block; exit is a passing structure gate advancing to c3
+    - soundness loop: c3 blocks route back to c2; exit is a passing soundness gate advancing to c4
+    - fidelity rollback: c5 blocks re-draft the passage under c5; exit is a passing fidelity gate advancing to c6
+  escalations:
+    - c5 prose-to-structure -> restructure (transition, not a new workflow)
+    - c7 blocking defects -> re-enter at their owning stage (c2 structure, c5 prose)
+  depth:
+    standard: c1..c6; terminal c6
+    deep: adds c7 (independent-review reconciliation); terminal c7
+    audit: documented handoff to finalize (WF-FINALIZE) after c6, not a stage here
+  terminal: c6 at standard depth; c7 at deep depth
+  reachable_completion: true
+
+attestation: "no source prose copied; no card ids in public files"

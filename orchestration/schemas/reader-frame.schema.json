@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://reader-first-writing/orchestration/schemas/reader-frame.schema.json",
+  "title": "Reader Frame",
+  "description": "The single shared reader-and-situation model that every planning and prose stage reads from and none may contradict.",
+  "type": "object",
+  "properties": {
+    "reader": {
+      "type": "object",
+      "description": "What the intended reader knows and is asking before opening the document.",
+      "properties": {
+        "prior_knowledge": {
+          "type": "string",
+          "description": "What the reader is assumed to already hold."
+        },
+        "standing_question": {
+          "type": "string",
+          "description": "The question the reader carries into the document."
+        },
+        "expertise_level": {
+          "type": "string",
+          "enum": ["novice", "mixed", "practitioner", "expert"]
+        },
+        "mastered_vocabulary": {
+          "type": "array",
+          "description": "In-group settled terms that are safe to leave undefined.",
+          "items": { "type": "string" }
+        }
+      },
+      "required": ["prior_knowledge", "standing_question", "expertise_level"],
+      "additionalProperties": false
+    },
+    "situation": {
+      "type": "object",
+      "description": "The circumstance that makes the document necessary.",
+      "properties": {
+        "triggering_circumstance": { "type": "string" },
+        "unresolved_tension": {
+          "type": "string",
+          "description": "The gap or friction the document exists to close."
+        }
+      },
+      "required": ["triggering_circumstance", "unresolved_tension"],
+      "additionalProperties": false
+    },
+    "communicative_aim": {
+      "type": "string",
+      "enum": ["reveal", "act"]
+    },
+    "genre": {
+      "type": "string",
+      "enum": ["business_analytical", "academic", "general_explanatory", "technical_documentation"]
+    },
+    "read_mode": {
+      "type": "string",
+      "enum": ["scanned", "linear", "unknown"]
+    },
+    "document_length": {
+      "type": "string",
+      "enum": ["short", "long", "unknown"]
+    },
+    "expert_blind_spots": {
+      "type": "array",
+      "description": "Knowledge silently assumed by an expert author; bias toward assuming the reader knows too little.",
+      "items": { "type": "string" }
+    },
+    "uncertainty_bias": {
+      "type": "string",
+      "description": "The default lean when audience facts are uncertain.",
+      "enum": ["assume_too_little"]
+    },
+    "clarification_needed": {
+      "type": "array",
+      "description": "Empty unless audience facts are missing and must be asked before proceeding.",
+      "items": { "type": "string" }
+    },
+    "frame_confidence": {
+      "type": "string",
+      "description": "How firmly the reader-and-situation model is grounded.",
+      "enum": ["low", "medium", "high"]
+    },
+    "validation_warnings": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "recommended_next_step": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "reader",
+    "situation",
+    "communicative_aim",
+    "genre",
+    "read_mode",
+    "document_length",
+    "uncertainty_bias",
+    "clarification_needed",
+    "validation_warnings",
+    "recommended_next_step"
+  ],
+  "additionalProperties": false
+}

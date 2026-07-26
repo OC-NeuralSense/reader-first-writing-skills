@@ -1,0 +1,59 @@
+# Concept-card schema (Stage C): the structure every private principle card follows.
+# This SCHEMA is public (it contains no source content). The CARDS produced from it
+# are PRIVATE and live only under development-private/concept-cards/ (gitignored).
+#
+# Rules for filling a card:
+#   • Independently worded. Never copy source sentences, phrasings, or distinctive examples.
+#   • Abstract the PRINCIPLE, not the passage. If you cannot state it in your own words, omit it.
+#   • Any example must be newly invented, or left blank (original examples come later, in M5).
+#   • Record conditions, exceptions, and uncertainty honestly. Do not force-fit.
+#
+# One YAML document per principle; a unit file contains a list of these under `cards:`.
+
+id: INTERNAL-CONCEPT-ID          # e.g. SOURCEA-U2-003 or SOURCEB-S04-002 (stable, unit-scoped)
+
+source:
+  book: private-source-id        # "source-a" | "source-b" (no titles/authors in downstream public files)
+  unit: private-unit-id          # e.g. "ch2" / "section-04" (private)
+  locator: private-locator       # coarse private pointer (e.g. "unit p.3"); NEVER surfaced publicly
+
+writing_level:                   # one or more
+  - document | section | paragraph | sentence | word
+
+function:                        # one or more
+  - diagnose | plan | structure | draft | revise | evaluate | validate
+
+problem_addressed: >             # independently written: what writing problem this addresses
+  ...
+
+principle: >                     # independently written: the abstract principle, original wording
+  ...
+
+mechanism: >                     # why it is expected to help the reader or writer
+  ...
+
+conditions:                      # contexts in which it applies
+  - ...
+
+exceptions:                      # contexts in which it may not apply / tradeoffs
+  - ...
+
+dependencies:                    # concepts that should precede it (ids or short labels)
+  - ...
+
+possible_conflicts:              # concepts requiring reconciliation (esp. across books)
+  - ...
+
+automation_candidate:
+  type: llm-judgment | deterministic-tool | workflow-step | human-decision
+  rationale: >
+    ...
+
+public_expression_status:        # provenance flags, all start false; flipped later in the pipeline
+  independently_worded: true     # analyst asserts the wording here is original
+  original_example_created: false
+  overlap_checked: false
+  human_reviewed: false
+
+uncertainty: >                   # optional: OCR noise, ambiguous passage, low confidence, etc.
+  ...

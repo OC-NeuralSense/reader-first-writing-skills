@@ -1,0 +1,20 @@
+name: structure validity
+id: GATE-STRUCTURE
+purpose: >-
+  Confirm the argument object is a single answer-first hierarchy whose claims are
+  grouped, labeled, and screened before any prose is drafted against it.
+applies_after: build-argument, revise-structure
+owner: build-argument / revise-structure
+indicators_from: [outline-validator]
+pass_criteria:
+  - exactly one governing question and one controlling idea, with subject and point kept separate
+  - every claim maps to a parent or to the labeled drop list, leaving no orphan nodes
+  - each group holds one logical kind, its members do not overlap, and it is judged complete
+  - no parent is a bare count or category header; each parent genuinely summarizes its children
+  - the answer is placed first unless an expected-disagreement trigger justifies inverting it
+fail_action: loop back to re-group, re-order, and re-summarize until the hierarchy holds
+severity: blocking
+note: >-
+  The tool flags orphans, overlaps, and empty toppers; faithful summary and
+  completeness remain model judgments. The FIDELITY gate is supreme and overrides
+  every other resolution, including any outcome of this gate.

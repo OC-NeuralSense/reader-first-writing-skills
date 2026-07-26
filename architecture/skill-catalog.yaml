@@ -1,0 +1,413 @@
+# Skill Catalog (M4 / Phase 5)
+# PUBLIC FILE -- tracked in git.
+# The minimum-sufficient set of user-goal skills for the writing system.
+# COPYRIGHT/PRIVACY: NO source-card ids, NO book locators, ORIGINAL names only.
+# Capability ids (CAP-nn) reference public architecture/capability-map.yaml.
+# Use-case ids (UC-nn) reference public architecture/use-case-catalog.yaml.
+
+meta:
+  produced_by: architecture-designer
+  stage: "M4 / Phase 5"
+  design_principle: >-
+    Every skill maps to one recognizable user goal with distinct activation.
+    Sibling use cases that share methodology and activation neighborhood are
+    merged and parameterized (task_mode, depth_mode, genre) rather than split,
+    because splitting them would raise routing errors without adding capability.
+  product_decisions_honored:
+    v1_genres: [business_analytical, academic, general_explanatory, technical_documentation]
+    clarity_stance: integrated
+    scope: single_written_documents
+  depth_modes:
+    quick: single fast surface pass, explicitly non-exhaustive
+    standard: normal single-plane pass with its own diagnosis+revision loop
+    deep: multi-perspective, independent-review-backed pass
+    teaching: staged, each move carries defect + test + rationale
+    audit: release-oriented go/no-go with blocking/non-blocking separation
+  preservation_control_vocabulary:
+    meaning: [strict, preserving]        # strict = zero propositional drift tolerated
+    voice: [locked, envelope-bounded, open]
+    qualifiers: [retained, may-relax-low-stakes]
+    technical_precision: [anchored, standard]
+  counts:
+    skills_total: 12
+
+skills:
+
+  - id: SK-FRAME
+    name: frame-the-brief
+    user_goal: "Work out who I am writing for, why the document exists, and what type it is, before any content decision."
+    is: diagnostic
+    activation:
+      triggers:
+        - "Who am I writing this for and what do they already know?"
+        - "Help me pin down the reader / audience / situation."
+        - "What kind of document is this and what does it need to do?"
+      signals: [missing_reader_profile, unstated_genre, unstated_aim]
+    non_triggers:
+      - "Already have a settled reader profile and want structure -> build-argument"
+      - "Want sentence fixes -> revise-prose"
+    inputs: [brief_or_topic, audience_hints, optional_draft]
+    outputs: [reader-frame contract]
+    decision_rules_summary: >-
+      State assumed prior knowledge, the reader's standing question, expertise,
+      and the writer's aim; classify the communicative aim (reveal vs act) and
+      route the genre; bias uncertainty toward assuming too little; surface
+      expert blind spots as risks. Emit a clarification request when audience
+      facts are absent (the most common clarification trigger in the system).
+    capabilities_covered: [CAP-01, CAP-02, CAP-03, CAP-04, CAP-05]
+    covers_use_cases: [UC-29, UC-02-partial]
+    depth_modes_supported: [quick, standard]
+    preservation_controls: {meaning: n/a, voice: n/a}
+    genres: universal
+
+  - id: SK-ARGUE
+    name: build-argument
+    user_goal: "Turn notes, a topic, or claims into a validated answer-first argument structure."
+    is: generative
+    activation:
+      triggers:
+        - "Turn these raw notes into a structured argument."
+        - "What single question should this answer, and what is the lead answer?"
+        - "Give me an outline that leads with the answer."
+        - "Cluster these items into sensible groups."
+        - "In what order should these points go?"
+      signals: [has_reader_frame, needs_structure, unordered_material]
+    non_triggers:
+      - "Only wants to check an existing structure's logic -> test-argument"
+      - "Wants prose from an approved outline -> draft-prose"
+      - "Wants apparatus density or the ending decided -> shape-and-close"
+    inputs: [reader-frame contract, notes_or_claims_or_topic]
+    outputs: [argument-blueprint contract]
+    decision_rules_summary: >-
+      Reduce to one governing question scaled to the reader's gap; state a
+      one-line controlling idea separating subject from point; inventory and
+      screen claims for soundness/relevance; assemble a summary-before-detail
+      hierarchy where each parent genuinely summarizes its children; group by a
+      single logical kind, non-overlapping and complete; order each group by its
+      formation logic reconciled with reader load; place the answer first unless
+      an expected-disagreement trigger inverts it; build the context-tension-
+      question-answer opening backward from the settled answer. Every input note
+      is placed under a parent or added to a labeled drop list.
+    capabilities_covered: [CAP-12, CAP-13, CAP-14, CAP-15, CAP-16, CAP-17, CAP-18, CAP-19, CAP-20]
+    covers_use_cases: [UC-01, UC-02, UC-03, UC-05, UC-06]
+    depth_modes_supported: [standard, deep]
+    preservation_controls: {meaning: preserving, voice: open}
+    genres: universal
+
+  - id: SK-TEST-ARG
+    name: test-argument
+    user_goal: "Check whether the claims actually support the conclusion and find anything unsupported."
+    is: evaluative
+    activation:
+      triggers:
+        - "Do these points actually support my conclusion?"
+        - "Find any claims here that aren't actually supported."
+        - "Is this parent a real summary of its children?"
+      signals: [conclusion_plus_support_present, soundness_question]
+    non_triggers:
+      - "Wants a full layered draft diagnosis -> diagnose-draft"
+      - "Wants to build the structure from scratch -> build-argument"
+    inputs: [argument-blueprint contract OR conclusion_plus_claims]
+    outputs: [defect-report contract (soundness layer)]
+    decision_rules_summary: >-
+      Judge each parent-child link as genuinely following or not; distinguish
+      logical support from rhetorical fit; name missing, overlapping, or
+      irrelevant supports; flag overclaims, non-sequiturs, anecdote-as-trend and
+      false-dichotomy patterns; require each group to carry a completeness note.
+      Reports; does not rewrite. Reliability materially improves with independent
+      review, so deep depth routes to an independent-reviewer.
+    capabilities_covered: [CAP-08, CAP-19, CAP-16, CAP-24]
+    covers_use_cases: [UC-04, UC-22]
+    depth_modes_supported: [standard, deep]
+    preservation_controls: {meaning: strict}
+    genres: universal
+
+  - id: SK-DRAFT
+    name: draft-prose
+    user_goal: "Draft continuous prose from an approved outline without smuggling in new claims."
+    is: generative
+    activation:
+      triggers:
+        - "Draft the prose from this approved outline."
+        - "Write this up from the plan."
+      signals: [validated_outline_present]
+    non_triggers:
+      - "No validated outline yet -> build-argument first"
+      - "Draft exists and needs fixing -> revise-prose / diagnose-draft"
+    inputs: [argument-blueprint contract, reader-frame contract]
+    outputs: [draft_prose, node_to_prose_map]
+    decision_rules_summary: >-
+      Render every outline node into prose as revisable raw material; introduce
+      no claim or relation the outline does not contain; keep jargon within the
+      reader's mastered vocabulary; maintain topic continuity, recoverable
+      coherence, given-before-new flow, concreteness, and block-level bridges.
+    capabilities_covered: [CAP-27, CAP-29, CAP-30, CAP-31, CAP-32, CAP-23]
+    covers_use_cases: [UC-08]
+    depth_modes_supported: [standard]
+    preservation_controls: {meaning: strict, qualifiers: retained}
+    genres: universal
+
+  - id: SK-DIAGNOSE
+    name: diagnose-draft
+    user_goal: "Tell me what's wrong with this draft, separating structural faults from prose faults."
+    is: diagnostic
+    activation:
+      triggers:
+        - "This draft feels off -- tell me what's wrong."
+        - "List the faults in this draft and where they are."
+        - "Where are the problems in this document?"
+      signals: [complete_or_partial_draft, task_mode_diagnose, report_faults_not_fix]
+    non_triggers:
+      - "Wants a fast surface pass that also fixes, not a fault list -> quick-pass (WF-QUICK)"
+      - "Wants the fixes applied, not just found -> revise-structure / revise-prose"
+      - "Wants a release go/no-go -> review-document (audit)"
+    inputs: [draft, reader-frame contract]
+    outputs: [defect-report contract (structure + prose layers)]
+    decision_rules_summary: >-
+      Report structural and prose defects on distinct layers; each finding cites
+      a location and the concrete test it failed; audit parent-summary validity,
+      group completeness/non-overlap, orphan claims, parsing traps, coherence
+      recoverability, reference, information flow, imageability, and expert
+      blind-spot gaps. quick depth returns only top surface fixes plus the most
+      visible structural risk and never claims exhaustiveness. Persistent local
+      incoherence that is really a structural symptom is escalated, not patched.
+    capabilities_covered: [CAP-24, CAP-35, CAP-05, CAP-06, CAP-08, CAP-19, CAP-28]
+    covers_use_cases: [UC-09, UC-27]
+    depth_modes_supported: [quick, standard, deep]
+    preservation_controls: {meaning: n/a}
+    genres: universal
+
+  - id: SK-RESTRUCTURE
+    name: revise-structure
+    user_goal: "Fix the structure of this document while holding meaning constant."
+    is: revisional
+    activation:
+      triggers:
+        - "Fix the structure of this document."
+        - "Re-group / re-order / re-summarize these points."
+      signals: [known_structural_defect, task_mode_revise]
+    non_triggers:
+      - "Sentence-level flow only -> revise-prose"
+      - "Only wants to know if it is broken -> diagnose-draft / test-argument"
+    inputs: [draft_or_outline, argument-blueprint contract, defect-report contract]
+    outputs: [revised_structure, change-report contract]
+    decision_rules_summary: >-
+      Repair by re-grouping, re-ordering, re-summarizing, or cutting claims; the
+      named defect must no longer reproduce; the pre/post claim set stays
+      identical and a re-run of the soundness test passes; no fix may silently
+      change what the document claims. Fidelity overrides tidiness.
+    capabilities_covered: [CAP-25, CAP-24, CAP-16, CAP-17, CAP-19, CAP-07]
+    covers_use_cases: [UC-10]
+    depth_modes_supported: [standard, deep]
+    preservation_controls: {meaning: strict, qualifiers: retained, voice: envelope-bounded}
+    genres: universal
+
+  - id: SK-REVISE-PROSE
+    name: revise-prose
+    user_goal: "Fix the flow, clarity, length, or thinness of sentences and paragraphs without changing meaning."
+    is: revisional
+    activation:
+      triggers:
+        - "The paragraphs don't hang together -- fix the flow."   # task_mode=cohere
+        - "Make these sentences clearer."                          # task_mode=clarify
+        - "Cut this down without losing anything important."       # task_mode=compress
+        - "This part is too thin -- expand it."                    # task_mode=expand
+        - "Fix the grammar / settle this punctuation."             # task_mode=usage
+      signals: [passage_level, prose_defect, task_mode_revise]
+    non_triggers:
+      - "The incoherence is a structural gap -> escalate to revise-structure"
+      - "Recalibrating for a different audience -> adapt-to-reader"
+    inputs: [passage, reader-frame contract, task_mode, optional target_length]
+    outputs: [revised_passage, change-report contract]
+    decision_rules_summary: >-
+      One skill, five task modes. cohere: restore recoverable coherence, stable
+      topic strings, working bridges; never add a connective that misstates the
+      real relation. clarify: remove misparse traps and deep center-embedding,
+      manage end-weight and given-before-new, keep roles and referents intact.
+      compress: delete only words with no meaning and no parsing value; keep
+      structure-marking words and every qualifier/hedge. expand: close the named
+      expert blind spot with concrete, picturable material, never padding or
+      invented support. usage: a lightweight correctness pass (CAP-37) that
+      settles grammar, punctuation, and disputed usage only -- distinguishing
+      ungrammatical from merely ambiguous, and grammar from register -- so a
+      trivial correctness fix needs no full review-document pass; it changes no
+      claim and carries the same strict fidelity. Passive voice kept or reverted
+      by discourse function, not by rule. A rewrite that alters a role, drops a
+      referent, or shifts a claim is rejected under fidelity.
+    capabilities_covered: [CAP-28, CAP-29, CAP-30, CAP-31, CAP-32, CAP-33, CAP-34, CAP-36, CAP-37, CAP-23, CAP-05, CAP-06]
+    covers_use_cases: [UC-11, UC-12, UC-13, UC-14]
+    depth_modes_supported: [quick, standard]
+    preservation_controls: {meaning: strict, qualifiers: retained, voice: envelope-bounded}
+    genres: universal
+
+  - id: SK-ADAPT
+    name: adapt-to-reader
+    user_goal: "Rewrite this for a different audience while keeping the technical meaning exact."
+    is: revisional
+    activation:
+      triggers:
+        - "Rewrite this for a non-specialist / for executives / for experts."
+        - "Simplify this but do not lose the technical meaning."
+      signals: [target_reader_change, jargon_recalibration]
+    non_triggers:
+      - "Same reader, just clearer sentences -> revise-prose"
+      - "Structure is the problem -> revise-structure"
+    inputs: [draft, target_reader_profile, technical_definitions]
+    outputs: [recalibrated_version, change-report contract, precision_report]
+    decision_rules_summary: >-
+      Recalibrate jargon to the target in-group's entrenched terms, rescale
+      depth and assumed ground to the target's gap, and close blind spots for
+      the new reader. Each plain-language substitution must preserve the exact
+      concept -- no term silently narrowed or widened, no scope or tolerance
+      changed. Avoid condescension for expert readers. Technical precision is
+      anchored: every flagged term keeps a definition anchor pre/post.
+    capabilities_covered: [CAP-01, CAP-32, CAP-05, CAP-31, CAP-07, CAP-06]
+    covers_use_cases: [UC-15, UC-16]
+    depth_modes_supported: [standard, deep]
+    preservation_controls: {meaning: strict, technical_precision: anchored, voice: envelope-bounded}
+    genres: [technical_documentation, academic, business_analytical, general_explanatory]
+
+  - id: SK-SHAPE-CLOSE
+    name: shape-and-close
+    user_goal: "Decide how much signposting the document needs and how it should end, for its genre and aim."
+    is: generative
+    activation:
+      triggers:
+        - "How much heading/numbering structure should this have?"
+        - "How should this end -- flat summary or a push to act?"
+      signals: [apparatus_question, closing_question, genre_and_aim_known]
+    non_triggers:
+      - "Wants the whole structure built -> build-argument"
+      - "Wants a full review -> review-document"
+    inputs: [plan_or_draft, genre, length, read_mode, communicative_aim]
+    outputs: [apparatus_density_recommendation, closing_design, layout_map]
+    decision_rules_summary: >-
+      Scale visible apparatus to genre, length, and read-mode: heavier explicit
+      scaffolding for long scanned/navigated documents, light prose transitions
+      for short linear pieces, academic per venue convention; every heading or
+      topic sentence must carry a real claim, never a generic label. Let purpose
+      govern the ending: a calibrated action-seeking close only where the aim is
+      to drive a decision (default legitimate for business/analytical), a
+      presentational non-emoting close where the aim is to reveal a truth
+      (academic, general-explanatory, technical documentation default). Signpost
+      density and emotive-close force are parameterized and flagged for human
+      ratification; this skill exposes the setting rather than hard-coding it. It
+      also maps the validated hierarchy onto an ordered section/paragraph layout
+      (CAP-21): each section names its function, the claim ids it carries, and a
+      paragraph-level plan, so the plan-document workflow hands off a layout the
+      workflow-validator can check, not just a loose recommendation.
+    capabilities_covered: [CAP-22, CAP-04, CAP-23, CAP-26, CAP-03, CAP-08, CAP-21]
+    covers_use_cases: [UC-31, UC-32]
+    depth_modes_supported: [quick, standard]
+    preservation_controls: {meaning: preserving}
+    genres: [business_analytical, academic, general_explanatory, technical_documentation]
+
+  - id: SK-COMPARE
+    name: compare-versions
+    user_goal: "Show what changed between two versions, whether it's actually better, and whether any caveats were dropped."
+    is: evaluative
+    activation:
+      triggers:
+        - "Show me what changed and whether it's better."
+        - "Did my edits drop any important caveats or hedges?"
+        - "Explain why the revised version is an improvement."
+      signals: [two_versions_present, task_mode_evaluate]
+    non_triggers:
+      - "Only one version exists -> diagnose-draft"
+      - "Wants the change made, not judged -> revise-prose / revise-structure"
+    inputs: [original, revised, preservation_intent, reader-frame contract]
+    outputs: [change-report contract]
+    decision_rules_summary: >-
+      Classify each change as meaning-altering or meaning-preserving; a silent
+      meaning change is never reported as a style win. Judge each preserving
+      change on reader-effort impact, tying the reason to a named reader effect,
+      not taste. List every dropped qualification, hedge, scope limit, or
+      condition with its original location. Do not treat every change as an
+      improvement.
+    capabilities_covered: [CAP-07, CAP-09, CAP-06, CAP-11, CAP-16]
+    covers_use_cases: [UC-21, UC-23, UC-25]
+    depth_modes_supported: [standard]
+    preservation_controls: {meaning: strict, qualifiers: retained}
+    genres: universal
+
+  - id: SK-REVIEW
+    name: review-document
+    user_goal: "Review or assess a document against reader-facing goals, using the lens its genre calls for, up to a ship decision."
+    is: evaluative
+    activation:
+      triggers:
+        - "Review this executive summary."             # genre=business_analytical
+        - "Review the argument in this paper section." # genre=academic
+        - "Review this explainer for a general reader." # genre=general_explanatory
+        - "Review this technical explanation."         # genre=technical_documentation
+        - "Review this policy memo."                   # policy = sub-case of business_analytical
+        - "Is this ready to ship?"                     # depth=audit, genre-neutral gate
+      signals: [near_final_or_complete_document, evaluate_or_release]
+    non_triggers:
+      - "Wants a fast surface pass -> diagnose-draft (quick)"
+      - "Wants the multi-perspective independent review -> deep-review workflow"
+    inputs: [document, reader-frame contract, genre, communicative_aim, preservation_intent]
+    outputs: [defect-report contract, go_no_go_decision (audit depth)]
+    decision_rules_summary: >-
+      One skill, genre-routed lens; one lens per locked genre. business_analytical:
+      answer-first placement, real recommendation not a topic label, sound
+      support, calibrated action-seeking close; a policy memo is handled here as a
+      business_analytical sub-case -- its recommendation argued on the merits, not
+      by demolishing alternatives, reasoning-first when the conclusion will
+      surprise. academic: inferential soundness, evidence fit, completeness, fair
+      counter-position handling, no overclaim. general_explanatory: reader
+      comprehension of an explanation that makes no recommendation -- concepts
+      accessible for the assumed prior knowledge, given-before-new progression,
+      concrete/worked material where it aids grasp, no unexplained jargon, the
+      explanation complete for the reader's standing question, a presentational
+      non-emoting close. technical_documentation: completeness/non-overlap of
+      steps, preserved precision, picturability, navigation apparatus. audit
+      depth: judge comprehension, credibility, soundness, correctness; separate
+      blocking from non-blocking defects; confirm meaning-preservation; settle
+      disputed usage/punctuation; apply the release gate. Reliability materially
+      improves with an independent reviewer, so deep/audit depth routes through
+      one.
+    capabilities_covered: [CAP-09, CAP-08, CAP-07, CAP-10, CAP-37, CAP-05, CAP-06, CAP-18, CAP-19, CAP-24, CAP-22, CAP-26, CAP-32, CAP-16]
+    covers_use_cases: [UC-17, UC-18, UC-19, UC-20, UC-24]
+    depth_modes_supported: [standard, deep, audit]
+    preservation_controls: {meaning: strict}
+    genres: [business_analytical, academic, general_explanatory, technical_documentation]
+
+  - id: SK-TEACH
+    name: teach-revision
+    user_goal: "Walk me through improving this so I learn to do it myself."
+    is: revisional
+    activation:
+      triggers:
+        - "Walk me through improving this so I learn to do it myself."
+        - "Teach me why these edits work."
+      signals: [learner_present, pedagogical_intent]
+    non_triggers:
+      - "Just wants the document fixed, not taught -> revise-* skills"
+    inputs: [learner_draft, learner_level, reader-frame contract]
+    outputs: [staged_revision_with_defect_test_rationale]
+    decision_rules_summary: >-
+      Stage the revision so each step names the defect, the test it failed, and
+      the principle behind the fix; the learner could re-apply the test unaided.
+      Never apply a fix silently. Do not overwhelm or prescribe one form as the
+      only correct one. Attach a reason to each move (rationale-attachment
+      habit) without using generic good-writing gloss.
+    capabilities_covered: [CAP-35, CAP-24, CAP-25, CAP-36, CAP-11]
+    covers_use_cases: [UC-26]
+    depth_modes_supported: [teaching]
+    preservation_controls: {meaning: strict, voice: envelope-bounded}
+    genres: universal
+
+folded_capabilities_note: >-
+  CAP-11 (cross-plane arbitration) has no standalone skill: it is exercised as a
+  reconciliation step inside revise-prose/revise-structure, as the compare-versions
+  effort judgment, and as the deep-review orchestrator's reconciliation gate,
+  because a same-passage structure-vs-prose conflict only ever arises inside an
+  active revision or review, never as a cold user request. UC-30 is served there.
+  CAP-21 (section/paragraph layout) is declared by shape-and-close, which owns the
+  layout step, and travels in the argument-blueprint `layout_map` field; whole-report
+  planning (UC-07) is still folded into the plan-document workflow over
+  build-argument + shape-and-close rather than a separate skill, to avoid two
+  overlapping planning activations.
+
+attestation: "no source prose copied; no card ids in public files"

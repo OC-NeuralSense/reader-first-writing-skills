@@ -1,0 +1,19 @@
+name: routing correctness
+id: GATE-ROUTING
+purpose: >-
+  Confirm the request reached the skill or workflow that matches its stage, task
+  mode, and depth, and that collisions were surfaced rather than guessed.
+applies_after: routing-evaluator selection, review-orchestrator merge
+owner: routing-evaluator / review-orchestrator
+indicators_from: [routing-evaluator]
+pass_criteria:
+  - the selected skill or workflow matches stage, task mode, and depth
+  - genre and read mode are requested, not assumed, when a genre lens or apparatus decision needs them
+  - collisions are surfaced to the user rather than silently resolved
+  - every same-passage structure-versus-prose conflict is logged as reconciled or escalated, never averaged
+fail_action: ask for the missing signal or present the tie to the user
+severity: blocking
+note: >-
+  This gate guards the highest-frequency failure -- routing a structural fault to a
+  prose fix or the reverse. The FIDELITY gate is supreme and overrides every other
+  resolution when a routed fix would alter meaning.

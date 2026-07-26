@@ -1,0 +1,681 @@
+# Use-Case Catalog (M4 / Phase 4)
+# PUBLIC FILE -- tracked in git.
+# One entry per user-facing use case the system must support.
+# It does NOT assign skills, agents, or tools (next milestone).
+#
+# COPYRIGHT/PRIVACY: NO source-card ids, NO book chapter/section locators,
+# ORIGINAL wording only. Capability ids (CAP-nn) reference the public
+# capability-map.yaml.
+
+meta:
+  produced_by: capability-cataloger
+  stage: "M4 / Phase 4"
+  v1_genres: [business_analytical, academic, general_explanatory, technical_documentation]
+  scope: single_written_documents
+  field_key:
+    reasoning_depth: low | med | high
+    deterministic_checkable: what a script could verify without judgment
+    needs_independent_review: whether a second, blind reviewer materially raises reliability
+    genres: which of the four v1 genres the use case applies to, or "universal"
+  counts:
+    use_cases_total: 32
+
+use_cases:
+
+  - id: UC-01
+    name: Convert notes into an argument
+    user_trigger: "Turn these raw notes into a structured argument."
+    input: unordered notes, bullet fragments, or research jottings
+    required_context: [reader profile, communicative aim, genre]
+    capabilities: [CAP-14, CAP-12, CAP-13, CAP-15, CAP-16, CAP-08]
+    expected_output: a validated argument tree with a lead answer and grouped, labeled supporting claims
+    success_criteria:
+      - one governing question and one lead answer are identified
+      - every note is either placed under a parent or explicitly dropped as irrelevant
+      - each group is one logical kind and non-overlapping
+    failure_conditions:
+      - notes are re-listed without a hierarchy or lead answer
+      - a group mixes unlike kinds or leaves an unplaced claim
+    risks: [forcing a thesis the notes do not support, dropping a material claim as "irrelevant"]
+    needs_clarification: when the notes imply several possible governing questions or no clear reader
+    reasoning_depth: high
+    deterministic_checkable: every input note maps to a node or a labeled drop list; each group has a single plural-noun label
+    needs_independent_review: false
+    relationship_to_other_use_cases: precedes UC-03; feeds UC-07; uses UC-02 and UC-29 outputs
+    genres: universal
+
+  - id: UC-02
+    name: Define the governing question
+    user_trigger: "What single question should this document answer?"
+    input: a topic, brief, or draft plus the reader profile
+    required_context: [reader profile, knowledge gap]
+    capabilities: [CAP-12, CAP-13, CAP-03]
+    expected_output: one governing question scaled to the reader's gap, plus its one-line answer with subject and point separated
+    success_criteria:
+      - exactly one reducible question is stated
+      - the answer separates what it concerns from what it asserts
+    failure_conditions:
+      - multiple competing questions returned with no primary
+      - the answer restates the topic without asserting a point
+    risks: [picking a question the writer cannot actually answer, scoping too wide for the reader]
+    needs_clarification: when the reader's standing question is unknown or the brief spans multiple aims
+    reasoning_depth: med
+    deterministic_checkable: output contains exactly one question sentence and one declarative answer
+    needs_independent_review: false
+    relationship_to_other_use_cases: foundation for UC-01, UC-03, UC-07
+    genres: universal
+
+  - id: UC-03
+    name: Produce an answer-first outline
+    user_trigger: "Give me an outline that leads with the answer."
+    input: governing question, lead answer, and candidate claims
+    required_context: [reader profile, communicative aim, expected reader reaction]
+    capabilities: [CAP-15, CAP-18, CAP-16, CAP-17, CAP-19, CAP-20]
+    expected_output: a hierarchical outline leading with the answer, groups ordered by formation logic, each parent a substantive summary
+    success_criteria:
+      - the answer sits at the top unless an expected-disagreement trigger inverts it
+      - each parent genuinely summarizes its children
+      - within-group order matches the group's formation logic
+    failure_conditions:
+      - a parent is an empty count or category label
+      - ordering is arbitrary or contradicts the group's logic
+    risks: [answer-first applied where the reader will reject the conclusion cold]
+    needs_clarification: when the top point is likely to contradict the reader's expectations
+    reasoning_depth: high
+    deterministic_checkable: outline depth and grouping; no parent node whose label is a bare count/category
+    needs_independent_review: false
+    relationship_to_other_use_cases: follows UC-01/UC-02; input to UC-08; checked by UC-04
+    genres: universal
+
+  - id: UC-04
+    name: Test whether claims support a conclusion
+    user_trigger: "Do these points actually support my conclusion?"
+    input: a stated conclusion and its supporting claims or an outline
+    required_context: [argument tree or claim set]
+    capabilities: [CAP-19, CAP-16, CAP-24, CAP-08]
+    expected_output: a validity report -- whether the parent genuinely follows, gaps, overlaps, and irrelevant supports
+    success_criteria:
+      - each parent-child link is judged as genuinely following or not
+      - missing or overlapping supports are named
+    failure_conditions:
+      - a non-sequitur passes unflagged
+      - true-but-irrelevant support is accepted as load-bearing
+    risks: [conflating rhetorical fit with logical support]
+    needs_clarification: when the claimed inference type (chain vs class) is ambiguous
+    reasoning_depth: high
+    deterministic_checkable: every leaf links to a parent; each group carries a completeness note
+    needs_independent_review: true
+    relationship_to_other_use_cases: validates UC-03; overlaps UC-22; part of UC-10 and UC-24
+    genres: universal
+
+  - id: UC-05
+    name: Group comparable ideas
+    user_trigger: "Cluster these items into sensible groups."
+    input: a flat list of claims, findings, or items
+    required_context: [the logical kind the writer intends]
+    capabilities: [CAP-16, CAP-19]
+    expected_output: groups of one logical kind each, non-overlapping and complete, each with a substantive label
+    success_criteria:
+      - each group is nameable by one plural noun
+      - no item belongs to two groups; no obvious member is missing
+    failure_conditions:
+      - a group mixes kinds or a label merely counts the members
+    risks: [over-fitting groups to a preferred narrative]
+    needs_clarification: when items could be grouped by several equally valid dimensions
+    reasoning_depth: med
+    deterministic_checkable: each item in exactly one group; each group has a plural-noun label
+    needs_independent_review: false
+    relationship_to_other_use_cases: subroutine of UC-01 and UC-03; feeds UC-06
+    genres: universal
+
+  - id: UC-06
+    name: Choose an ordering principle
+    user_trigger: "In what order should these points go?"
+    input: a single group of members and how the group was formed
+    required_context: [formation logic of the group, reader processing constraints]
+    capabilities: [CAP-17, CAP-30]
+    expected_output: a recommended order (argument chain, chronological, part-structure, or degree) with rationale, reconciled with reader load
+    success_criteria:
+      - the chosen order matches the analytical act that formed the group
+      - reader-processing conflicts are reconciled, not ignored
+    failure_conditions:
+      - order chosen by habit rather than formation logic
+    risks: [defaulting to importance order where chronology or structure is required]
+    needs_clarification: when two orders are individually valid and reader load must break the tie
+    reasoning_depth: med
+    deterministic_checkable: stated order label is drawn from the closed set of ordering principles
+    needs_independent_review: false
+    relationship_to_other_use_cases: follows UC-05; part of UC-03 and UC-10
+    genres: universal
+
+  - id: UC-07
+    name: Plan a report
+    user_trigger: "Help me plan this whole report before I write."
+    input: brief, purpose, audience, and available material
+    required_context: [reader profile, communicative aim, genre, length/read-mode]
+    capabilities: [CAP-02, CAP-01, CAP-03, CAP-04, CAP-12, CAP-15, CAP-20, CAP-21, CAP-22]
+    expected_output: a full plan -- situation, reader, governing question, validated hierarchy, section/paragraph map, and apparatus setting
+    success_criteria:
+      - plan ties every section to a node in the validated hierarchy
+      - apparatus density is set to genre, length, and read-mode
+    failure_conditions:
+      - sections invented that no claim supports
+      - apparatus set without reference to genre or read-mode
+    risks: [planning structure before the reader profile is settled]
+    needs_clarification: when genre or read-mode (scanned vs linear) is not given
+    reasoning_depth: high
+    deterministic_checkable: each planned section references a hierarchy node; an apparatus-density value is present
+    needs_independent_review: false
+    relationship_to_other_use_cases: composes UC-01..UC-06, UC-29, UC-31; precedes UC-08
+    genres: universal
+
+  - id: UC-08
+    name: Draft from an approved outline
+    user_trigger: "Draft the prose from this approved outline."
+    input: a validated outline plus the reader profile
+    required_context: [reader profile, jargon tolerance, apparatus setting]
+    capabilities: [CAP-27, CAP-29, CAP-30, CAP-31, CAP-32, CAP-23]
+    expected_output: continuous prose rendering the outline faithfully, as revisable raw material
+    success_criteria:
+      - every outline node is realized in the prose
+      - no claim or relation is introduced that the outline does not contain
+    failure_conditions:
+      - prose drifts from the outline's logic
+      - jargon pitched above the reader's mastered vocabulary
+    risks: [treating the first draft as final, smuggling in unsupported claims]
+    needs_clarification: rarely; when the outline has gaps that force drafting decisions
+    reasoning_depth: med
+    deterministic_checkable: each outline node has corresponding prose; heading text matches node labels
+    needs_independent_review: false
+    relationship_to_other_use_cases: follows UC-03/UC-07; precedes UC-09/UC-11/UC-12
+    genres: universal
+
+  - id: UC-09
+    name: Diagnose a weak draft
+    user_trigger: "This draft feels off -- tell me what's wrong."
+    input: a complete draft
+    required_context: [reader profile, genre, communicative aim]
+    capabilities: [CAP-24, CAP-35, CAP-05, CAP-06, CAP-08, CAP-19]
+    expected_output: a layered defect report separating structural faults from prose faults, each located and named
+    success_criteria:
+      - structural and prose defects are reported on distinct layers
+      - each defect cites a location and a concrete test it failed
+    failure_conditions:
+      - vague "make it flow better" feedback with no located defect
+      - a structural fault misreported as a mere wording issue
+    risks: [self-review blind spots; missing an expert-blind-spot gap]
+    needs_clarification: when the intended reader or genre is unstated
+    reasoning_depth: high
+    deterministic_checkable: each finding tagged structure|prose with a location anchor
+    needs_independent_review: true
+    relationship_to_other_use_cases: routes to UC-10/UC-11/UC-12; escalation source for UC-30
+    genres: universal
+
+  - id: UC-10
+    name: Repair document structure
+    user_trigger: "Fix the structure of this document."
+    input: a draft or outline with a known or suspected structural defect
+    required_context: [argument tree, reader profile]
+    capabilities: [CAP-25, CAP-24, CAP-16, CAP-17, CAP-19, CAP-07]
+    expected_output: a revised structure with the defect repaired and meaning held constant
+    success_criteria:
+      - the named defect no longer reproduces
+      - propositional meaning is preserved across the re-grouping/re-ordering
+    failure_conditions:
+      - a fix that silently changes what the document claims
+    risks: [repair that improves tidiness but alters the argument]
+    needs_clarification: when repair options trade off against each other and stakes are high
+    reasoning_depth: high
+    deterministic_checkable: pre/post claim set is identical; re-run of UC-04 passes
+    needs_independent_review: true
+    relationship_to_other_use_cases: follows UC-09; verified by UC-07 checks and UC-23
+    genres: universal
+
+  - id: UC-11
+    name: Repair paragraph coherence
+    user_trigger: "The paragraphs don't hang together -- fix the flow."
+    input: a paragraph or section whose connections read as broken
+    required_context: [surrounding text, topic being tracked]
+    capabilities: [CAP-29, CAP-23, CAP-30, CAP-36]
+    expected_output: revised text with recoverable coherence relations, stable topic strings, and working bridges
+    success_criteria:
+      - the relation between adjacent sentences is inferable
+      - topic continuity holds across the passage
+    failure_conditions:
+      - added connectives that misstate the actual relation
+      - a persistent incoherence that is really a structural fault left unescalated
+    risks: [papering a structural gap with a surface connective]
+    needs_clarification: when the incoherence may be a symptom of a missing structural link
+    reasoning_depth: med
+    deterministic_checkable: each cross-sentence link carries a coherence marker; topic-string subjects tracked
+    needs_independent_review: false
+    relationship_to_other_use_cases: sibling of UC-12; may escalate to UC-10 via UC-30
+    genres: universal
+
+  - id: UC-12
+    name: Improve sentence clarity
+    user_trigger: "Make these sentences clearer."
+    input: one or more sentences or a paragraph
+    required_context: [reader profile, technical precision required]
+    capabilities: [CAP-28, CAP-30, CAP-31, CAP-33, CAP-34, CAP-36]
+    expected_output: revised sentences that parse more easily while preserving meaning and role assignment
+    success_criteria:
+      - misparse traps and deep embeddings removed
+      - meaning, roles, and technical sense unchanged
+    failure_conditions:
+      - a rewrite that inverts an agent/patient role or drops a referent
+    risks: [over-simplifying away a needed technical distinction]
+    needs_clarification: when precision requirements are unknown for a technical passage
+    reasoning_depth: med
+    deterministic_checkable: embedding depth and sentence-length heuristics; referents resolvable
+    needs_independent_review: false
+    relationship_to_other_use_cases: sibling of UC-11; guarded by UC-16; verified by UC-21
+    genres: universal
+
+  - id: UC-13
+    name: Compress without losing meaning
+    user_trigger: "Cut this down without losing anything important."
+    input: a passage judged too long
+    required_context: [what must be preserved, target length or budget]
+    capabilities: [CAP-33, CAP-31, CAP-07]
+    expected_output: a shorter passage that keeps meaning, boundary markers, and needed qualifications
+    success_criteria:
+      - only words with no meaning and no parsing value are removed
+      - propositional content and qualifications survive
+    failure_conditions:
+      - a cut that drops a qualification or hedge and thereby changes a claim
+      - removing a structure-marking word and creating a misparse
+    risks: [compression that quietly strengthens or broadens a claim]
+    needs_clarification: when a compression target conflicts with keeping qualifications
+    reasoning_depth: med
+    deterministic_checkable: word-count delta; set of qualifiers/hedges present before is present after
+    needs_independent_review: false
+    relationship_to_other_use_cases: inverse of UC-14; guarded by UC-16 and UC-23
+    genres: universal
+
+  - id: UC-14
+    name: Expand an under-explained argument
+    user_trigger: "This part is too thin -- expand it."
+    input: a passage that assumes too much or skips steps
+    required_context: [reader profile, the missing inferential steps]
+    capabilities: [CAP-05, CAP-06, CAP-31, CAP-32, CAP-36]
+    expected_output: an expanded passage that supplies the missing ground and concrete detail for the intended reader
+    success_criteria:
+      - the expert blind spot is closed for the intended reader
+      - added material is concrete and picturable, not padding
+    failure_conditions:
+      - expansion that adds words without closing the gap
+      - inventing support that the argument cannot bear
+    risks: [padding, or introducing claims that shift the argument]
+    needs_clarification: when the reader's true starting knowledge is unknown
+    reasoning_depth: med
+    deterministic_checkable: none reliably; presence of added definitions/examples at flagged gaps
+    needs_independent_review: true
+    relationship_to_other_use_cases: inverse of UC-13; consumes UC-09/UC-05 flags
+    genres: universal
+
+  - id: UC-15
+    name: Adapt text to a reader
+    user_trigger: "Rewrite this for a non-specialist / for executives / for experts."
+    input: a draft plus a target reader description
+    required_context: [target reader profile, original technical precision]
+    capabilities: [CAP-01, CAP-32, CAP-05, CAP-31, CAP-07]
+    expected_output: a version recalibrated to the target reader's vocabulary, depth, and assumed knowledge
+    success_criteria:
+      - jargon reduced to the target in-group's entrenched terms
+      - depth and assumed ground rescaled to the target's gap
+    failure_conditions:
+      - technical meaning narrowed or widened during simplification
+      - condescension or gratuitous re-explanation for an expert reader
+    risks: [losing precision when down-leveling; assuming too much when up-leveling]
+    needs_clarification: when the target reader's expertise is described only vaguely
+    reasoning_depth: med
+    deterministic_checkable: undefined-term list vs target vocabulary; reading-level heuristics
+    needs_independent_review: true
+    relationship_to_other_use_cases: paired with UC-16; re-runs after UC-29 refresh
+    genres: universal
+
+  - id: UC-16
+    name: Preserve technical precision
+    user_trigger: "Simplify this but do not lose the technical meaning."
+    input: a technical passage undergoing simplification or adaptation
+    required_context: [exact technical definitions, allowable paraphrase envelope]
+    capabilities: [CAP-07, CAP-32, CAP-06]
+    expected_output: a precision report confirming the exact technical sense survived every substitution
+    success_criteria:
+      - each plain-language substitution preserves the exact concept
+      - no term is silently narrowed or widened
+    failure_conditions:
+      - a gloss that changes scope, tolerance, or definition
+    risks: [plausible-but-wrong simplifications that read fluently]
+    needs_clarification: when a term's precise definition is not supplied
+    reasoning_depth: high
+    deterministic_checkable: partial -- flagged technical terms retain a definition anchor pre/post
+    needs_independent_review: true
+    relationship_to_other_use_cases: guards UC-12, UC-13, UC-15; instance of UC-23 for technical terms
+    genres: [technical_documentation, academic, business_analytical]
+
+  - id: UC-17
+    name: Review an executive summary
+    user_trigger: "Review this executive summary."
+    input: an executive summary or decision brief
+    required_context: [reader profile (decision-maker), communicative aim (usually action-seeking)]
+    capabilities: [CAP-09, CAP-18, CAP-19, CAP-08, CAP-24, CAP-26]
+    expected_output: a review judging answer-first placement, summary substance, soundness, and close
+    success_criteria:
+      - the answer leads unless an expected-disagreement trigger justifies inversion
+      - the summary carries a real point, not a topic label
+    failure_conditions:
+      - accepting a buried recommendation or an empty topper
+    risks: [rewarding polish over a load-bearing recommendation]
+    needs_clarification: when the decision the summary serves is unstated
+    reasoning_depth: high
+    deterministic_checkable: lead sentence contains an assertion; a recommendation is present
+    needs_independent_review: true
+    relationship_to_other_use_cases: genre instance of UC-24; uses UC-04
+    genres: [business_analytical]
+
+  - id: UC-18
+    name: Review an academic argument
+    user_trigger: "Review the argument in this paper section."
+    input: an academic argument or section
+    required_context: [field conventions, reader profile (peer), claims and evidence]
+    capabilities: [CAP-08, CAP-19, CAP-24, CAP-09, CAP-32]
+    expected_output: a review of inferential soundness, evidence fit, completeness, and fair treatment of counter-positions
+    success_criteria:
+      - each inferential step is judged; counter-evidence handling assessed
+      - unsupported or overclaimed statements are flagged
+    failure_conditions:
+      - a non-sequitur or overclaim passes; a straw-manned counterposition unflagged
+    risks: [conflating disciplinary register with argument quality]
+    needs_clarification: when field-specific evidentiary norms are unknown
+    reasoning_depth: high
+    deterministic_checkable: each claim links to cited evidence; hedge/qualifier presence
+    needs_independent_review: true
+    relationship_to_other_use_cases: genre instance of UC-24; uses UC-04, UC-22
+    genres: [academic]
+
+  - id: UC-19
+    name: Review a technical explanation
+    user_trigger: "Review this technical explanation for clarity and correctness."
+    input: a technical explanation, procedure, or reference passage
+    required_context: [reader profile (operator/implementer), read-mode, precision requirements]
+    capabilities: [CAP-05, CAP-06, CAP-16, CAP-22, CAP-32, CAP-07]
+    expected_output: a review of completeness, correct precision, picturability, and navigation apparatus
+    success_criteria:
+      - steps/parts are complete and non-overlapping
+      - precision preserved and apparatus fits a navigated read
+    failure_conditions:
+      - a missing step or an expert-blind-spot gap left unflagged
+    risks: [assuming operator knowledge the reader lacks]
+    needs_clarification: when the reader's operating context is unspecified
+    reasoning_depth: high
+    deterministic_checkable: step/part completeness; heading presence for navigated content
+    needs_independent_review: true
+    relationship_to_other_use_cases: genre instance of UC-24; uses UC-16
+    genres: [technical_documentation]
+
+  - id: UC-20
+    name: Review a policy memo
+    user_trigger: "Review this policy memo."
+    input: a policy or position memo
+    required_context: [reader profile, communicative aim, counter-positions in play]
+    capabilities: [CAP-08, CAP-18, CAP-19, CAP-24, CAP-26, CAP-09]
+    expected_output: a review of recommendation clarity, soundness, counter-position handling, and close
+    success_criteria:
+      - the recommendation is argued on its merits, not by demolishing alternatives
+      - reasoning leads when the conclusion will surprise the reader
+    failure_conditions:
+      - recommendation justified only by attacking alternatives
+      - an emotive close where a presentational stance is warranted
+    risks: [persuasive force substituting for sound support]
+    needs_clarification: when the audience's prior stance is unknown
+    reasoning_depth: high
+    deterministic_checkable: presence of a stated recommendation and of counter-position treatment
+    needs_independent_review: true
+    relationship_to_other_use_cases: genre instance of UC-24; uses UC-04, UC-32
+    genres: [business_analytical, general_explanatory]
+
+  - id: UC-21
+    name: Compare original vs revised
+    user_trigger: "Show me what changed between these two versions and whether it's better."
+    input: an original and a revised version of the same text
+    required_context: [preservation intent, reader profile]
+    capabilities: [CAP-07, CAP-09, CAP-06]
+    expected_output: a change report classifying each change and judging whether it lowered reader effort without altering meaning
+    success_criteria:
+      - meaning-altering changes are separated from meaning-preserving ones
+      - each preserving change is judged on reader-effort impact
+    failure_conditions:
+      - a silent meaning change reported as a style improvement
+    risks: [treating any change as improvement]
+    needs_clarification: when preservation intent (how strictly meaning/voice must hold) is unstated
+    reasoning_depth: med
+    deterministic_checkable: diff segments; qualifier/claim set equality across versions
+    needs_independent_review: false
+    relationship_to_other_use_cases: verifies UC-10..UC-15; supports UC-23, UC-25
+    genres: universal
+
+  - id: UC-22
+    name: Detect unsupported claims
+    user_trigger: "Find any claims here that aren't actually supported."
+    input: a draft or argument
+    required_context: [available evidence, argument tree]
+    capabilities: [CAP-08, CAP-19, CAP-24]
+    expected_output: a list of claims lacking support, overclaims, and unwarranted inferences
+    success_criteria:
+      - each flagged claim cites why support is missing or insufficient
+      - anecdote-as-trend and false-dichotomy patterns are surfaced
+    failure_conditions:
+      - a bare assertion accepted as supported
+    risks: [flagging stylistically confident but sound claims, or missing subtle overclaims]
+    needs_clarification: when the evidence base is external and not provided
+    reasoning_depth: high
+    deterministic_checkable: each claim node has a support link or is flagged unsupported
+    needs_independent_review: true
+    relationship_to_other_use_cases: overlaps UC-04; part of UC-18, UC-24
+    genres: universal
+
+  - id: UC-23
+    name: Detect lost qualifications
+    user_trigger: "Did my edits drop any important caveats or hedges?"
+    input: an original and an edited version
+    required_context: [the qualifications that must survive]
+    capabilities: [CAP-07, CAP-16]
+    expected_output: a report of qualifications, hedges, scope limits, or conditions present before and missing after
+    success_criteria:
+      - every dropped qualification is listed with its original location
+    failure_conditions:
+      - a dropped "only/except/if" that changed a claim's scope missed
+    risks: [edits that quietly universalize a hedged claim]
+    needs_clarification: rarely; when it is unclear which hedges are load-bearing
+    reasoning_depth: med
+    deterministic_checkable: set of hedge/qualifier tokens and scope words present before vs after
+    needs_independent_review: false
+    relationship_to_other_use_cases: specialization of UC-21; guards UC-13, UC-15, UC-16
+    genres: universal
+
+  - id: UC-24
+    name: Final quality gate
+    user_trigger: "Is this ready to ship?"
+    input: a near-final document
+    required_context: [reader profile, genre, communicative aim]
+    capabilities: [CAP-09, CAP-08, CAP-07, CAP-10, CAP-37, CAP-05]
+    expected_output: a go/no-go judgment against comprehension, credibility, soundness, and correctness, with blocking defects listed
+    success_criteria:
+      - blocking vs non-blocking defects are separated
+      - correctness and meaning-preservation are confirmed
+    failure_conditions:
+      - shipping with an unresolved soundness or meaning defect
+    risks: [passing a fluent but unsound document]
+    needs_clarification: when acceptance thresholds (how good is good enough) are unstated
+    reasoning_depth: high
+    deterministic_checkable: partial -- usage/punctuation checks and presence of required apparatus
+    needs_independent_review: true
+    relationship_to_other_use_cases: aggregates UC-04, UC-09, UC-22; genre variants UC-17..UC-20
+    genres: universal
+
+  - id: UC-25
+    name: Explain why a revision is better
+    user_trigger: "Explain why the revised version is an improvement."
+    input: an original, a revision, and the change set
+    required_context: [reader profile, which principles the change invoked]
+    capabilities: [CAP-09, CAP-11, CAP-06]
+    expected_output: a per-change rationale tying each edit to a named reader-effort or soundness benefit
+    success_criteria:
+      - each material change has a reason attached
+      - reasons reference reader effect, not taste
+    failure_conditions:
+      - a bare "it reads better" with no stated mechanism
+    risks: [post-hoc rationalization of changes that were neutral or harmful]
+    needs_clarification: rarely
+    reasoning_depth: med
+    deterministic_checkable: each change segment has an attached rationale field
+    needs_independent_review: false
+    relationship_to_other_use_cases: consumes UC-21; supports UC-26
+    genres: universal
+
+  - id: UC-26
+    name: Teach via guided revision
+    user_trigger: "Walk me through improving this so I learn to do it myself."
+    input: a learner's draft
+    required_context: [learner level, reader profile]
+    capabilities: [CAP-35, CAP-24, CAP-25, CAP-36, CAP-11]
+    expected_output: a staged, reasoned revision that shows each defect, its test, and the principle behind the fix
+    success_criteria:
+      - each step names the defect, the test it failed, and the rationale
+      - the learner could re-apply the test unaided
+    failure_conditions:
+      - fixes applied silently with no teachable reason
+    risks: [overwhelming the learner; prescribing one form as the only correct one]
+    needs_clarification: when the learner's current skill level is unknown
+    reasoning_depth: high
+    deterministic_checkable: each revision step carries defect + test + rationale fields
+    needs_independent_review: false
+    relationship_to_other_use_cases: composes UC-09, UC-25; uses UC-10..UC-12
+    genres: universal
+
+  - id: UC-27
+    name: Quick pass
+    user_trigger: "Just give it a fast once-over."
+    input: any draft
+    required_context: [reader profile if available]
+    capabilities: [CAP-35, CAP-28, CAP-31, CAP-33, CAP-05]
+    expected_output: a small set of high-value surface fixes and the most visible structural risk, without a full audit
+    success_criteria:
+      - top surface defects fixed; any glaring structural risk noted
+      - no claim of exhaustiveness
+    failure_conditions:
+      - presenting a quick pass as a full quality gate
+    risks: [missing deep structural faults a fast pass cannot reach]
+    needs_clarification: none; the shallow depth is the contract
+    reasoning_depth: low
+    deterministic_checkable: pass explicitly scoped as non-exhaustive; surface heuristics applied
+    needs_independent_review: false
+    relationship_to_other_use_cases: shallow-depth counterpart of UC-28; may recommend UC-09
+    genres: universal
+
+  - id: UC-28
+    name: Deep multi-agent review
+    user_trigger: "Do a thorough, multi-perspective review."
+    input: a complete document
+    required_context: [reader profile, genre, communicative aim, preservation intent]
+    capabilities: [CAP-24, CAP-35, CAP-08, CAP-19, CAP-05, CAP-06, CAP-09, CAP-11, CAP-07]
+    expected_output: a full layered report across structure, prose, soundness, and reader-fit, with independent perspectives reconciled
+    success_criteria:
+      - structural, prose, and soundness layers each covered
+      - independent findings reconciled and conflicts surfaced, not averaged away
+    failure_conditions:
+      - a single perspective masquerading as multi-perspective
+      - unresolved same-passage conflicts silently decided
+    risks: [false confidence from correlated reviewers; cost/latency]
+    needs_clarification: when preservation intent or acceptance thresholds are unstated
+    reasoning_depth: high
+    deterministic_checkable: coverage across all defect layers; every escalation logged
+    needs_independent_review: true
+    relationship_to_other_use_cases: deep-depth counterpart of UC-27; aggregates UC-04, UC-09, UC-22, UC-24, UC-30
+    genres: universal
+
+  - id: UC-29
+    name: Build the reader profile
+    user_trigger: "Who am I writing this for, and what do they already know?"
+    input: a brief, audience hints, or a draft
+    required_context: [any known audience facts]
+    capabilities: [CAP-01, CAP-05, CAP-03]
+    expected_output: an explicit reader profile -- prior knowledge, standing question, expertise, aim -- that both planes will read from
+    success_criteria:
+      - the profile states assumed prior knowledge and the standing question
+      - uncertainty is biased toward assuming too little
+    failure_conditions:
+      - a profile so vague it constrains nothing downstream
+    risks: [over-estimating shared knowledge; no elicitation procedure exists, so the estimate may be wrong]
+    needs_clarification: when audience facts are absent -- this is the most common clarification trigger in the system
+    reasoning_depth: med
+    deterministic_checkable: profile contains prior-knowledge, standing-question, expertise, and aim fields
+    needs_independent_review: false
+    relationship_to_other_use_cases: precedes nearly every use case; refreshed by UC-24 findings
+    genres: universal
+
+  - id: UC-30
+    name: Resolve a structure-vs-prose conflict
+    user_trigger: "The clearest sentence order breaks my logical structure -- which wins?"
+    input: a passage where a structural requirement and a prose improvement collide
+    required_context: [the structural requirement's type, meaning to preserve, reader profile]
+    capabilities: [CAP-11, CAP-07, CAP-06]
+    expected_output: a reconciled rewrite that honors both, or -- if none exists -- an escalation flag with the trade-off stated
+    success_criteria:
+      - a both-satisfying rewrite is attempted first
+      - a meaning-altering "fix" is rejected under fidelity
+      - a genuine unresolved conflict is escalated, not silently decided for either plane
+    failure_conditions:
+      - defaulting to "structure wins" or "prose wins" without a reader-effort basis
+      - silently keeping one version where the conflict is real and unresolved
+    risks: [inventing a substantive precedence the model deliberately leaves open]
+    needs_clarification: when no rewrite reconciles the two and a human ruling is needed
+    reasoning_depth: high
+    deterministic_checkable: partial -- meaning-equality check on candidate rewrites; escalation logged when unresolved
+    needs_independent_review: true
+    relationship_to_other_use_cases: invoked by UC-09, UC-11, UC-28; bounded by the same-passage open question
+    genres: universal
+
+  - id: UC-31
+    name: Calibrate signposting to genre
+    user_trigger: "How much heading/numbering structure should this have?"
+    input: a document plan or draft plus genre, length, and read-mode
+    required_context: [genre, document length, read-mode (scanned vs linear)]
+    capabilities: [CAP-22, CAP-04, CAP-23]
+    expected_output: an apparatus-density recommendation with heading/numbering/indentation guidance, each heading required to carry a real claim
+    success_criteria:
+      - density matches genre, length, and read-mode
+      - no proposed heading is a generic label
+    failure_conditions:
+      - heavy scaffolding on a short linear piece, or none on a long navigated one
+    risks: [apparatus that costs more reader effort than it saves]
+    needs_clarification: when read-mode (scanned vs start-to-finish) is unknown
+    reasoning_depth: low
+    deterministic_checkable: an apparatus-density value is produced; each heading carries an assertion
+    needs_independent_review: false
+    relationship_to_other_use_cases: part of UC-07; genre-specific by design
+    genres: [business_analytical, academic, general_explanatory, technical_documentation]
+
+  - id: UC-32
+    name: Design the closing / call to action
+    user_trigger: "How should this end -- flat summary or a push to act?"
+    input: a document plus its communicative aim and genre
+    required_context: [communicative aim (reveal vs act), genre]
+    capabilities: [CAP-26, CAP-03, CAP-08]
+    expected_output: a closing appropriate to aim and genre -- presentational, or a calibrated action-seeking close with concrete next steps
+    success_criteria:
+      - action-seeking force used only where the aim is to drive a decision
+      - presentational close kept where the aim is to reveal a truth
+    failure_conditions:
+      - engineered emotion in an expository piece; a flat close where action is the point
+    risks: [mis-calibrated persuasive force; no per-reader calibration method exists]
+    needs_clarification: when the communicative aim is not stated
+    reasoning_depth: med
+    deterministic_checkable: presence/absence of a next-step call matched to declared aim
+    needs_independent_review: false
+    relationship_to_other_use_cases: part of UC-07, UC-17, UC-20; genre-specific by design
+    genres: [business_analytical, academic, general_explanatory, technical_documentation]
+
+attestation: "no source prose copied; no card ids in public files"
