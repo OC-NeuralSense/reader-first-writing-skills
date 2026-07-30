@@ -13,6 +13,12 @@ pass_criteria:
   - technical terms retain their exact sense, with no silent narrowing or widening
   - no referent is orphaned and no agent/patient role is inverted
   - the change stays within the declared preservation intent and voice envelope
+cites:  # methodology/<file>.md#<section>, one per pass_criteria bullet above, in order
+  - 41-revision-and-fidelity.md#the-supreme-fidelity-invariant
+  - 41-revision-and-fidelity.md#the-supreme-fidelity-invariant
+  - 41-revision-and-fidelity.md#the-supreme-fidelity-invariant
+  - 41-revision-and-fidelity.md#the-supreme-fidelity-invariant
+  - 41-revision-and-fidelity.md#the-supreme-fidelity-invariant
 fail_action: >-
   fidelity rollback -- revert or redo while preserving sense; never silently reword
   to force a pass.

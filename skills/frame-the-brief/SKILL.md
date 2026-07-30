@@ -66,6 +66,11 @@ Produces a **reader-frame** (see `architecture/handoff-contracts.yaml`). Populat
 every field; leave `clarification_needed` empty only when audience facts are
 present. Set `recommended_next_step` (usually build-argument).
 
+Every run also attaches a `decision_record`: the exact `methodology/<file>.md#<section>`
+references consulted (drawn from References to load below), the checks performed, any
+rule set aside naming its lawful exception, warnings, unresolved questions, and status.
+This cites the project's own methodology only, visible by default, never the source books.
+
 ## Fidelity requirements
 This skill writes no document prose and alters no meaning. If a draft was supplied,
 it is read only; never rewritten here.
@@ -75,6 +80,10 @@ it is read only; never rewritten here.
   fields as assumptions.
 - **standard:** a full diagnosis pass with an explicit blind-spot sweep.
 Depth changes the number of passes, not the verbosity of the output.
+
+At standard depth, the red-team-reviewer full-checklist compliance gate
+(`GATE-COMPLIANCE`) is mandatory per `orchestration/policies/red-team-policy.yaml`;
+quick depth stays exempt and explicitly non-exhaustive.
 
 ## Preservation controls
 Meaning and voice controls are not applicable (nothing is transformed). The only

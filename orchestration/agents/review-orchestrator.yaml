@@ -42,14 +42,23 @@ disallowed_tools: [edit, notebook_edit, network_web]
 produces:
   - defect-report (merged, multi-lens, conflicts surfaced not averaged)
   - arbitration_escalations (unresolved same-passage conflicts, trade-off stated)
+  - decision_record (embedded in the merged defect-report; reconciles every spawned
+    reviewer's methodology_loaded/checks_performed into one deduplicated record, visible
+    to the user by default, never a book reference)
 
 handoff_schema: defect-report
+
+subject_to_gate: >-
+  GATE-COMPLIANCE, at standard depth and above (orchestration/policies/red-team-policy.yaml).
+  This merged report's own coverage claim is verified by red-team-reviewer, not inherited.
 
 reconciliation_rules:
   - keep every finding on its own layer (structure, prose, soundness, reader_fit)
   - surface same-passage disagreements; never average two verdicts into a compromise
   - never invent a finding; every finding traces to a reviewer defect or an owned gate check
   - never claim consensus when reviewers disagree
+  - merge decision_records by deduplicating methodology_loaded/checks_performed; never drop
+    a sub-reviewer's citation silently
 
 fidelity_invariant: >-
   Supreme and above arbitration. If satisfying both the structure and prose layer

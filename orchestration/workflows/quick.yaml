@@ -89,6 +89,16 @@ notes:
   gate_note: >-
     q3 runs only a light meaning-preservation check (GATE-FIDELITY, light).
     This is NOT the release gate and must never be reported as one.
+  red_team_exemption: >-
+    quick-pass deliberately does NOT run red-team-reviewer or GATE-COMPLIANCE, per
+    orchestration/policies/red-team-policy.yaml's REDTEAM.QUICK_IS_EXEMPT. Forcing
+    full-checklist compliance onto a quick pass would erase the one deliberately
+    fast option this system offers, and quick already declares its own
+    non-exhaustiveness rather than claiming a completeness it never checked. Any
+    document that has only been through quick-pass has NOT had the full
+    methodology checklist applied; route it through deep-review, restructure,
+    revise, or finalize (all four run red-team-reviewer) before treating it as
+    complete.
   terminal: q3
   reachable_completion: true
 

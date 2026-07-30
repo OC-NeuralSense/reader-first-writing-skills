@@ -81,6 +81,11 @@ input contract and feeding downstream **diagnose-draft** / **revise-*** stages.
 The node-to-prose map is the traceability record that lets fidelity be checked
 later. State explicitly any node you could not render without adding content.
 
+Every run also attaches a `decision_record`: the exact `methodology/<file>.md#<section>`
+references consulted (drawn from References to load below), the checks performed, any
+rule set aside naming its lawful exception, warnings, unresolved questions, and status.
+This cites the project's own methodology only, visible by default, never the source books.
+
 ## Fidelity requirements
 Meaning is **strict** and qualifiers are **retained**. The draft may not
 strengthen, weaken, or add any claim; every qualifier, hedge, scope limit,
@@ -92,6 +97,11 @@ become "response times improved".
 ## Depth modes
 - **standard** only: one drafting pass with its own light clarity check. This
   skill does not run deep/independent review; that belongs to the review path.
+
+The red-team-reviewer full-checklist compliance gate (`GATE-COMPLIANCE`) is
+mandatory per `orchestration/policies/red-team-policy.yaml` before the draft is
+treated as complete: zero findings across the full methodology checklist (L0-L8
+plus house style), or the loop escalates after `max_iterations`.
 
 ## Preservation controls
 - meaning: strict

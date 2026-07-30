@@ -103,25 +103,44 @@ stages:
     on_failure: loop to r3 for further repair
     on_ambiguity: none
 
+  - id: r6
+    responsibility: >-
+      Audit the repaired document against the complete methodology checklist (L0
+      through L8 plus house style) before the restructure is treated as final.
+    execution:
+      type: agent
+      component: red-team-reviewer
+    depends_on: [r5]
+    parallel_with: []
+    input_contract: defect-report
+    output_contract: defect-report
+    gate: GATE-COMPLIANCE
+    on_failure: route each finding back to its owning stage per orchestration/policies/red-team-policy.yaml; red-team-reviewer re-checks, looping up to max_iterations, else escalate
+    on_ambiguity: treat an unmentioned checklist level as a gap to investigate, never as a pass
+
 completion_conditions:
   - named defect no longer reproduces
   - pre and post claim set identical
   - soundness re-test passes on the repaired structure
+  - the full checklist (L0-L8 plus house style) checked before the repair is final
 failure_conditions:
   - a fix that silently changes what the document claims
+  - a red-team finding silently dropped to force a pass
 quality_metrics:
   - defect-reproduction = false
   - claim-set equality = true
   - soundness re-test pass
+  - checklist coverage = 10/10 (L0-L8 plus house style)
 
 notes:
   loops:
     - fidelity rollback: r4 blocks -> r3; exit is a passing fidelity gate advancing to r5
-    - soundness re-test loop: r5 blocks -> r3; exit is a passing soundness re-test (terminal)
+    - soundness re-test loop: r5 blocks -> r3; exit is a passing soundness re-test advancing to r6
+    - "red-team loop: r6 finding -> re-enter its owning stage, up to red-team-policy.yaml's max_iterations, else escalate; exit is a passing compliance gate (terminal)"
   escalations:
     - r1 no-reproduce -> deep-review (transition, not a new workflow)
     - r2 fault is prose -> revise (transition, not a new workflow)
-  terminal: r5
+  terminal: r6
   reachable_completion: true
 
 attestation: "no source prose copied; no card ids in public files"

@@ -1,6 +1,6 @@
 {
   "name": "reader-first-writing",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A reader-first writing system: structure, draft, diagnose, revise, and review documents across argument architecture and sentence-level prose, with fidelity-preserving revision and independent review. Routes by writing goal (plan, compose, diagnose, restructure, revise, adapt, compare, review, finalize, teach).",
   "author": {
     "name": "OC-NeuralSense",

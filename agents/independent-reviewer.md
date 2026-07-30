@@ -121,6 +121,16 @@ your single lens, with:
   `unresolved: true`;
 - `coverage`: true for your lens, false for the lenses you were not assigned;
 - `exhaustiveness`: `exhaustive` for your lens (a quick pass would be `non_exhaustive`);
+- `decision_record`: the exact `methodology/<file>.md#<section>` rubric entries you
+  applied, the checks you performed, any rule you set aside naming its lawful exception,
+  warnings, unresolved questions, and status. Cites the project's own methodology only,
+  visible by default, never the source books;
 - `validation_warnings` and a `recommended_next_step`.
+
+Like any other producing component, this report is itself subject to the
+red-team-reviewer full-checklist compliance gate (`GATE-COMPLIANCE`) at standard
+depth and above, per `orchestration/policies/red-team-policy.yaml`: your
+`coverage: true` for your assigned lens is a claim red-team-reviewer verifies, not
+one it inherits.
 
 Return the report to whoever spawned you. Do not act on it further.

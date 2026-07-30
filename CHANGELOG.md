@@ -4,6 +4,56 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0]: 2026-07-30
+
+Adds a visible, per-run evidence trail so a user can check the reasoning behind any
+finding without asking for it, without changing what the system does or does not
+disclose about its two private source books.
+
+### Added
+- **Visible `decision_record`.** Every skill, both agents, and all six quality gates
+  now attach a `decision_record` to their output by default: which
+  `methodology/<file>.md#<section>` references were consulted, which checks ran, any
+  rule set aside (naming its lawful exception), warnings, unresolved questions, and a
+  status. It is on by default, not withheld until the user asks.
+- **A fifth handoff contract.** `architecture/handoff-contracts.yaml` gains a
+  `decision-record` contract, embedded in all four existing contracts
+  (`reader-frame`, `argument-blueprint`, `defect-report`, `change-report`); their
+  JSON Schemas were updated to require it.
+- **Gate citations.** Each of the six gate specs (structure, fidelity, release,
+  routing, soundness, clarity) now cites the exact methodology section behind every
+  one of its pass criteria, reusing the pointer style already established in
+  `methodology/checklists.md`. Two routing criteria are routing-table properties with
+  no methodology source and are labeled as such rather than given a false citation.
+- **review-orchestrator reconciliation.** When merging single-lens defect-reports, the
+  orchestrator now also merges their `decision_record`s into one deduplicated record
+  instead of dropping the sub-reviewers' citations.
+- **Mandatory full-checklist red-team compliance loop.** The three-lens review
+  (structure, prose, soundness_and_reader_fit) left real gaps against
+  `methodology/checklists.md`'s full ten-level index (house style, most word choice,
+  all length and rhythm, half of sentence-internal grammar, section apparatus, and
+  usage judgment were never checked by those lenses alone). A new agent,
+  `red-team-reviewer`, now runs after every skill, agent, and workflow stage at
+  standard depth and above, checks the complete checklist, and audits the producing
+  component's own coverage claim rather than trusting it. A new gate, GATE-COMPLIANCE,
+  and a new policy, `orchestration/policies/red-team-policy.yaml`, define a bounded
+  loop (`max_iterations: 5`): a finding routes back to its owning stage and
+  red-team-reviewer re-checks; if findings remain after the cap, the loop stops and an
+  honest escalation report is emitted, never a silent pass. `quick` depth stays exempt
+  and explicitly non-exhaustive, since forcing full compliance onto the one
+  deliberately fast path would erase it. GATE-RELEASE now requires GATE-COMPLIANCE
+  green, the same way it already requires GATE-FIDELITY green. Like every other
+  component, red-team-reviewer reads only the public methodology files; it has no
+  access to and never references the private source books.
+
+### Clarified
+- **The private-source boundary is unchanged and made explicit.** `docs/book-grounding.md`
+  now states directly that two mappings exist and only one is public: the new
+  methodology-to-decision citation is shown by default, while the book-to-methodology
+  mapping stays in the private, gitignored workspace, exactly as before. The
+  `decision_record` never names a book, an author, or a page; it cites this project's
+  own independently written methodology files only.
+
 ## [1.0.0]: 2026-07-25
 
 First public release. A full clean-room build: the architecture was **discovered** from

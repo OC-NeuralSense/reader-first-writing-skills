@@ -90,6 +90,11 @@ and an ordered `paragraph_plan`. The layout is structured so the workflow-valida
 can check it, not a loose recommendation. Flag `signposting_density` and
 `emotive_close_force` as ratifiable parameters for the release gate.
 
+Every run also attaches a `decision_record`: the exact `methodology/<file>.md#<section>`
+references consulted (drawn from References to load below), the checks performed, any
+rule set aside naming its lawful exception, warnings, unresolved questions, and status.
+This cites the project's own methodology only, visible by default, never the source books.
+
 ## Human-ratifiable settings
 Two outputs are explicitly settings, not decisions:
 - **signposting_density:** proposed with a default and reasoning; ratified by a human
@@ -107,6 +112,10 @@ licenses a new claim.
 - **quick:** density + close recommendation from genre/aim, with a light layout sketch.
 - **standard:** full section/paragraph layout_map with per-section claim ids and
   paragraph plans, validator-ready.
+
+At standard depth, the red-team-reviewer full-checklist compliance gate
+(`GATE-COMPLIANCE`) is mandatory per `orchestration/policies/red-team-policy.yaml`;
+quick depth stays exempt and explicitly non-exhaustive.
 
 ## Preservation controls
 `meaning: preserving`. Layout and settings only; no propositional change.

@@ -11,6 +11,12 @@ pass_criteria:
   - genre and read mode are requested, not assumed, when a genre lens or apparatus decision needs them
   - collisions are surfaced to the user rather than silently resolved
   - every same-passage structure-versus-prose conflict is logged as reconciled or escalated, never averaged
+cites:  # methodology/<file>.md#<section>, one per pass_criteria bullet above, in order;
+        # "no methodology anchor" marks a routing-table/tool-design property, not a source-derived rule
+  - no methodology anchor (routing-table correctness)
+  - 10-reader-and-purpose.md#4
+  - "no methodology anchor (routing-evaluator design - surface collisions, never guess)"
+  - 41-revision-and-fidelity.md#the-same-passage-conflict-escalates-it-does-not-auto-decide
 fail_action: ask for the missing signal or present the tie to the user
 severity: blocking
 note: >-

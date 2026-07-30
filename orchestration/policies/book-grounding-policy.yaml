@@ -50,16 +50,19 @@ requirements:
 
   - id: GROUND.CITATION_DISCIPLINE
     rule: >-
-      Components cite methodology files and rule markers internally (in
-      reports and handoffs). They do not lecture the user with citations
-      unless the user asks for methodological explanation.
+      Components cite methodology files and rule markers, and attach that
+      citation to every handoff by default so the user can see and check it
+      without having to ask. A citation names the project's own methodology
+      file and section, never the private source books; it is not a lecture,
+      just the record of which rule was applied.
 
-# The auditable decision record a transforming component attaches to its
-# handoff. This is a record of rules and checks, not hidden reasoning.
+# The auditable decision record a transforming or judging component attaches
+# to every handoff by default. This is a record of rules and checks, not
+# hidden reasoning, and never a book title, author name, or book locator.
 decision_record:
   artifact: string            # what was produced or revised
-  methodology_loaded:         # files actually consulted
-    - path
+  methodology_loaded:         # sections actually consulted, file#section
+    - path                    # e.g. methodology/20-argument-architecture.md#5.2
   checks_performed:           # e.g. fidelity, structure, prose, house_rules
     - name
   rules_set_aside: []         # each entry must name the lawful exception used

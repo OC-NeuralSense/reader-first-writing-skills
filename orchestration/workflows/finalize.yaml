@@ -79,12 +79,28 @@ stages:
 
   - id: f4
     responsibility: >-
+      Audit the near-final document against the complete methodology checklist
+      (L0 through L8 plus house style) before the ratified go/no-go, never
+      trusting f1's own coverage claim. Release cannot go without this gate green.
+    execution:
+      type: agent
+      component: red-team-reviewer
+    depends_on: [f3]
+    parallel_with: []
+    input_contract: defect-report
+    output_contract: defect-report
+    gate: GATE-COMPLIANCE
+    on_failure: route each finding back to its owning stage per orchestration/policies/red-team-policy.yaml; red-team-reviewer re-checks, looping up to max_iterations, else escalate
+    on_ambiguity: treat an unmentioned checklist level as a gap to investigate, never as a pass
+
+  - id: f5
+    responsibility: >-
       Lock apparatus density to genre and make the ratified go/no-go decision,
       listing any blocking defect that forces a no-go.
     execution:
       type: human-check
       component: release gate
-    depends_on: [f3]
+    depends_on: [f4]
     parallel_with: []
     input_contract: defect-report
     output_contract: defect-report
@@ -97,23 +113,28 @@ completion_conditions:
   - meaning-preservation confirmed across all prior edits
   - disputed usage settled and copyright safety cleared
   - apparatus density locked and a ratified go/no-go recorded
+  - the full checklist (L0-L8 plus house style) checked, with the COMPLIANCE gate green
 failure_conditions:
   - shipping with an unresolved soundness or meaning defect
   - passing a fluent-but-unsound document
+  - a red-team finding silently dropped to force a pass
 quality_metrics:
   - blocking-defect count = 0 at go
   - meaning-preservation pass
   - usage and apparatus checks pass
+  - checklist coverage = 10/10 (L0-L8 plus house style)
 
 notes:
   gate_sequence: >-
-    All prior gates funnel into GATE-RELEASE. This workflow terminates at the
-    release gate; f3 checks its usage/overlap preconditions and f4 is the ratified
-    go/no-go.
+    All prior gates funnel into GATE-RELEASE, and GATE-RELEASE itself now requires
+    GATE-COMPLIANCE green, the same way it already requires GATE-FIDELITY green.
+    This workflow terminates at the release gate; f3 checks its usage/overlap
+    preconditions, f4 checks the full checklist, and f5 is the ratified go/no-go.
   loops:
     - f2 fidelity block -> rollback to owning stage; exit is a passing fidelity gate
-    - f1/f4 blocking defects -> re-enter at their owning stage (transition, not a new workflow)
-  terminal: f4
+    - f1/f5 blocking defects -> re-enter at their owning stage (transition, not a new workflow)
+    - "red-team loop: f4 finding -> re-enter its owning stage, up to red-team-policy.yaml's max_iterations, else escalate; exit is a passing compliance gate advancing to f5"
+  terminal: f5
   terminal_gate: GATE-RELEASE
   reachable_completion: true
 

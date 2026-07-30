@@ -1,0 +1,81 @@
+# Red-team compliance policy: how the full methodology checklist is enforced,
+# bounded, and escalated. Parallel to book-grounding-policy.yaml.
+# PUBLIC FILE: no source-card ids, no book locators, original wording only.
+
+version: 1
+constitution: methodology/constitution/writing-constitution.md
+authority_order: methodology/constitution/authority-order.yaml
+gate: orchestration/gates/compliance.yaml
+
+requirements:
+  - id: REDTEAM.MANDATORY_AT_STANDARD_AND_ABOVE
+    rule: >-
+      red-team-reviewer runs on every skill, agent, and workflow-stage output at
+      standard depth or above. It is not optional and not skipped because the
+      producing component already reported its own coverage as complete.
+
+  - id: REDTEAM.QUICK_IS_EXEMPT
+    rule: >-
+      quick depth stays fast and explicitly non-exhaustive, exactly as every skill
+      already documents it ("never a quality gate"). Forcing full-checklist
+      compliance onto quick would erase the one deliberately fast option the system
+      offers; quick simply never claims completeness in the first place.
+
+  - id: REDTEAM.FULL_CHECKLIST_SCOPE
+    rule: >-
+      red-team-reviewer checks against the complete methodology/checklists.md index
+      (L0 through L8 plus house style), not a subset and not only the lenses the
+      producing component happened to run. A producing component's own coverage
+      claim is itself something red-team-reviewer audits, not something it trusts.
+
+  - id: REDTEAM.ADVERSARIAL_DEFAULT
+    rule: >-
+      red-team-reviewer is instructed to try to find what was missed, biasing
+      toward flagging when uncertain, never rubber-stamping a report because its
+      named lenses passed. Silence about a checklist level is treated as a gap to
+      investigate, not evidence the level was fine.
+
+  - id: REDTEAM.BOUNDED_LOOP
+    rule: >-
+      A finding routes back to its owning_stage for a fix; red-team-reviewer then
+      re-checks. This repeats up to max_iterations. The loop is bounded because an
+      unbounded loop has no guaranteed termination and no precedent anywhere in this
+      system; every other loop in this project already resolves by passing a gate or
+      escalating, never by running forever.
+
+  - id: REDTEAM.ESCALATE_NEVER_FAKE_PASS
+    rule: >-
+      If findings remain after max_iterations, the loop stops and an escalation
+      report is emitted per escalation_report_shape below. The system never reports
+      compliance that was not actually achieved, and never silently drops a
+      remaining finding to make the count reach zero.
+
+  - id: REDTEAM.NO_RUNTIME_BOOK_DEPENDENCY
+    rule: >-
+      red-team-reviewer reads methodology/*.md and methodology/checklists.md only.
+      It has no access to and makes no reference to the private source books,
+      exactly as GROUND.NO_RUNTIME_BOOK_DEPENDENCY already requires of every other
+      component.
+
+max_iterations: 5
+
+# The record attached when the bounded loop is exhausted without reaching zero
+# findings. Modeled on conflict-resolution.yaml's escalation_report_must_include.
+escalation_report_shape:
+  artifact: string
+  iterations_run: integer
+  max_iterations: 5
+  remaining_findings: []        # each the same shape as a defect-report finding
+  checklist_coverage:            # which levels were actually checked, true/false
+    L0: boolean
+    L1: boolean
+    L2: boolean
+    L3: boolean
+    L4: boolean
+    L5: boolean
+    L6: boolean
+    L7: boolean
+    house_style: boolean
+    L8: boolean
+  why_not_resolved: string       # honest account of why each pass failed to close it
+  status: escalated

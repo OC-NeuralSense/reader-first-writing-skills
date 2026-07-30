@@ -1,6 +1,6 @@
 {
   "name": "reader-first-writing-system",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "description": "An open-source agentic writing system for structuring, drafting, diagnosing, and revising written work. An independent methodology, distributable to Claude Code, Codex/OpenAI, and generic agents.",
   "type": "module",

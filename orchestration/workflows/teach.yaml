@@ -72,16 +72,35 @@ stages:
     on_failure: attach the missing per-change rationale
     on_ambiguity: none
 
+  - id: t4
+    responsibility: >-
+      Audit the taught, revised draft against the complete methodology checklist
+      (L0 through L8 plus house style), including L8's self-consistency check
+      (the guidance obeys the rule it teaches).
+    execution:
+      type: agent
+      component: red-team-reviewer
+    depends_on: [t3]
+    parallel_with: []
+    input_contract: change-report
+    output_contract: defect-report
+    gate: GATE-COMPLIANCE
+    on_failure: route each finding back to its owning stage per orchestration/policies/red-team-policy.yaml; red-team-reviewer re-checks, looping up to max_iterations, else escalate
+    on_ambiguity: treat an unmentioned checklist level as a gap to investigate, never as a pass
+
 completion_conditions:
   - each step names defect + test + rationale
   - the learner could re-apply the test unaided
+  - the full checklist (L0-L8 plus house style) checked, including self-consistency of the guidance
 failure_conditions:
   - fixes applied silently
   - overwhelming the learner
   - prescribing one form as the only correct one
+  - a red-team finding silently dropped to force a pass
 quality_metrics:
   - steps with complete defect/test/rationale fields
   - learner-reapplicability
+  - checklist coverage = 10/10 (L0-L8 plus house style)
 
 notes:
   non_redundancy: >-
@@ -89,7 +108,8 @@ notes:
     distinct (find -> teach the fix -> explain the effect).
   loops:
     - t2 too-hard step -> simplify and re-stage; exit is a step the learner can re-apply
-  terminal: t3
+    - "red-team loop: t4 finding -> re-enter its owning stage, up to red-team-policy.yaml's max_iterations, else escalate; exit is a passing compliance gate (terminal)"
+  terminal: t4
   reachable_completion: true
 
 attestation: "no source prose copied; no card ids in public files"

@@ -12,6 +12,12 @@ pass_criteria:
   - given-before-new and end-weight are reconciled, reordering the construction when they collide
   - wording is concrete and imageable; jargon is used only for in-group settled terms
   - passives are kept only where discourse function warrants them
+cites:  # methodology/<file>.md#<section>, one per pass_criteria bullet above, in order
+  - 31-sentence-geometry.md#3, 31-sentence-geometry.md#5
+  - 30-coherence-and-flow.md#2, 30-coherence-and-flow.md#4, 30-coherence-and-flow.md#5
+  - 30-coherence-and-flow.md#3, 31-sentence-geometry.md#7
+  - 32-word-choice-and-concreteness.md#1, 32-word-choice-and-concreteness.md#3
+  - 32-word-choice-and-concreteness.md#5
 fail_action: >-
   run the revise-prose loop; escalate to structure when the incoherence is a
   structural symptom rather than a wording problem.

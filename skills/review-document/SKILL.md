@@ -96,6 +96,11 @@ Produces a **defect-report** (see `architecture/handoff-contracts.yaml`): locate
 test-cited `findings[]` on distinct layers with severity, `escalations[]`, `coverage`, and
 `exhaustiveness`. At **audit** depth it additionally produces the `go_no_go_decision`.
 
+Every run also attaches a `decision_record`: the exact `methodology/<file>.md#<section>`
+references consulted (drawn from References to load below), the checks performed, any
+rule set aside naming its lawful exception, warnings, unresolved questions, and status.
+This cites the project's own methodology only, visible by default, never the source books.
+
 ## The release gate = the ship decision (audit)
 Only the release gate is entitled to say "ship". It passes only when: blocking and non-blocking
 defects are separated and there are **zero blocking** defects; comprehension, credibility, soundness,
@@ -114,6 +119,13 @@ sense, and the writer's position must be intact across prior edits.
 - **deep:** routes through independent reviewer(s) and the orchestrator; conflicts surfaced, not averaged.
 - **audit:** deep review plus the release gate: a go/no-go ship decision with blocking/non-blocking separated.
 (quick is not offered here; a fast pass is diagnose-draft and is explicitly non-exhaustive.)
+
+At every depth offered here, the red-team-reviewer full-checklist compliance gate
+(`GATE-COMPLIANCE`) is mandatory per `orchestration/policies/red-team-policy.yaml`:
+the defect-report is not complete until it reports zero findings across the full
+methodology checklist (L0-L8 plus house style), not only the genre lens above, or
+the loop escalates after `max_iterations`. At audit depth, GATE-RELEASE requires
+GATE-COMPLIANCE green before a go decision.
 
 ## Failure handling
 - Genre absent -> ASK before selecting a lens; do not infer.

@@ -69,6 +69,11 @@ Produces a **change-report** (see `architecture/handoff-contracts.yaml`). Popula
 `meaning_preserved`, `role_reference_integrity`, and `technical_precision_held`. Set
 `recommended_next_step` (fidelity rollback if a silent meaning change was found).
 
+Every run also attaches a `decision_record`: the exact `methodology/<file>.md#<section>`
+references consulted (drawn from References to load below), the checks performed, any
+rule set aside naming its lawful exception, warnings, unresolved questions, and status.
+This cites the project's own methodology only, visible by default, never the source books.
+
 ## Fidelity requirements
 The reference invariant lives in the original: claims, evidence, numbers, dates, names,
 negations, modality, conditions, exceptions, qualifications, technical sense, and the
@@ -79,6 +84,11 @@ finding, not a stylistic detail. This skill changes no text of its own.
 - **standard:** the full pairing + two-sweep comparison above. This skill runs only at
   standard; a comparison is meaningless if it skips the qualifier and added-claim sweeps,
   so there is no quick shortcut and no independent-review escalation here.
+
+The red-team-reviewer full-checklist compliance gate (`GATE-COMPLIANCE`) is
+mandatory per `orchestration/policies/red-team-policy.yaml`: the change-report is
+not complete until it reports zero findings across the full methodology checklist
+(L0-L8 plus house style), or the loop escalates after `max_iterations`.
 
 ## Failure handling
 - Versions not clearly paired (heavy restructuring) -> segment by claim, not by line, and

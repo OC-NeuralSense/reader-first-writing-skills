@@ -92,24 +92,49 @@ stages:
     on_failure: return an apparatus warning (heading without a real claim, density mismatched to read-mode)
     on_ambiguity: ask read-mode (scanned vs linear); leave signpost density and close as ratifiable parameters
 
+  - id: p5
+    responsibility: >-
+      Audit the plan against the complete methodology checklist (L0 through L8
+      plus house style) before it is treated as final. Skipped when this workflow
+      runs at quick depth, per orchestration/policies/red-team-policy.yaml's
+      quick-depth exemption.
+    execution:
+      type: agent
+      component: red-team-reviewer
+    depends_on: [p4]
+    parallel_with: []
+    input_contract: argument-blueprint
+    output_contract: defect-report
+    gate: GATE-COMPLIANCE
+    on_failure: route each finding back to its owning stage per orchestration/policies/red-team-policy.yaml; red-team-reviewer re-checks, looping up to max_iterations, else escalate
+    on_ambiguity: treat an unmentioned checklist level as a gap to investigate, never as a pass
+
 completion_conditions:
   - every planned section references a hierarchy node
   - apparatus density set with reference to genre and read-mode
   - soundness gate passed
+  - the full checklist (L0-L8 plus house style) checked at standard depth and above
 failure_conditions:
   - sections invented that no claim supports
   - apparatus set without reference to genre or read-mode
   - planning started before the reader-frame is settled
+  - a red-team finding silently dropped to force a pass
 quality_metrics:
   - node coverage of sections
   - soundness gate pass
   - apparatus-density value present
+  - checklist coverage = 10/10 (L0-L8 plus house style), at standard depth and above
 
 notes:
   loops:
     - structure-gate loop: p2 self-loops on GATE-STRUCTURE block; exit is a passing structure gate advancing to p3
     - soundness loop: p3 blocks route back to p2; exit is a passing soundness gate advancing to p4
-  terminal: p4
+    - "red-team loop: p5 finding -> re-enter its owning stage, up to red-team-policy.yaml's max_iterations, else escalate; exit is a passing compliance gate (terminal)"
+  depth_note: >-
+    p5 runs at standard depth and above. At quick depth, per
+    orchestration/policies/red-team-policy.yaml's REDTEAM.QUICK_IS_EXEMPT, p5 is
+    skipped and the plan stays explicitly non-exhaustive.
+  terminal: p5 (p4 at quick depth)
   reachable_completion: true
 
 attestation: "no source prose copied; no card ids in public files"

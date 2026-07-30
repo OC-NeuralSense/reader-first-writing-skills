@@ -13,9 +13,30 @@ meta:
     that crosses an agent boundary, so each is self-describing and includes its
     own validation_warnings and a recommended_next_step to keep routing explicit.
   counts:
-    contracts_total: 4
+    contracts_total: 5
 
 contracts:
+
+  - id: decision-record
+    produced_by: [frame-the-brief, build-argument, draft-prose, diagnose-draft, test-argument, review-document, revise-prose, revise-structure, adapt-to-reader, compare-versions, shape-and-close, teach-revision, independent-reviewer, review-orchestrator]
+    consumed_by: [user]
+    purpose: >-
+      The visible, per-run evidence trail: which methodology sections were consulted
+      and which checks ran, so the user can check the component's reasoning without
+      being lectured. Cites methodology/*.md by file and section only, in the
+      project's own reformulated wording. Never a book title, author name, page
+      number, or any private-source locator. Attached to every one of the four
+      artifact-carrying contracts below by default (see GROUND.CITATION_DISCIPLINE
+      in orchestration/policies/book-grounding-policy.yaml); it is not optional and
+      not withheld until the user asks.
+    schema:
+      artifact: string                  # what was produced or revised
+      methodology_loaded: [string]      # methodology/<file>.md#<section>, one per rule actually applied
+      checks_performed: [string]        # e.g. fidelity, structure, prose, house_rules, plus the tool name if a tool ran
+      rules_set_aside: [string]         # each entry names the lawful exception used, per authority-order.yaml
+      warnings: [string]
+      unresolved_questions: [string]
+      status: [approved, escalated, no_change_needed]
 
   - id: reader-frame
     produced_by: [frame-the-brief]
@@ -37,6 +58,7 @@ contracts:
       expert_blind_spots: [string]     # knowledge silently assumed; bias toward assuming too little
       uncertainty_bias: assume_too_little
       clarification_needed: [string]   # empty unless audience facts are missing
+      decision_record: decision-record  # see the decision-record contract above
       validation_warnings: [string]
       recommended_next_step: string
 
@@ -82,11 +104,12 @@ contracts:
       assumptions: [string]
       ambiguities: [string]
       evidence_gaps: [string]
+      decision_record: decision-record  # see the decision-record contract above
       validation_warnings: [string]     # from outline-validator + soundness pass
       recommended_next_step: string
 
   - id: defect-report
-    produced_by: [diagnose-draft, test-argument, review-document, independent-reviewer, review-orchestrator]
+    produced_by: [diagnose-draft, test-argument, review-document, independent-reviewer, review-orchestrator, red-team-reviewer]
     consumed_by: [revise-structure, revise-prose, teach-revision, finalize, review-orchestrator, user]
     purpose: located, test-cited defects on distinct layers, with escalations and coverage.
     schema:
@@ -114,9 +137,32 @@ contracts:
         prose: boolean
         soundness: boolean
         reader_fit: boolean
+        # checklist-level keys, populated by a full-checklist pass (red-team-reviewer);
+        # optional on every other producer, required nowhere but red-team-reviewer's own
+        # completeness claim
+        L0: boolean
+        L1: boolean
+        L2: boolean
+        L3: boolean
+        L4: boolean
+        L5: boolean
+        L6: boolean
+        L7: boolean
+        house_style: boolean
+        L8: boolean
       exhaustiveness: [exhaustive, non_exhaustive]  # quick pass is non_exhaustive
+      decision_record: decision-record  # see the decision-record contract above
       validation_warnings: [string]
       recommended_next_step: string
+      escalation_report:  # optional; attached only when the red-team loop hit max_iterations
+        artifact: string  # with findings still remaining, per red-team-policy.yaml
+        iterations_run: integer
+        max_iterations: integer
+        remaining_findings: [object]
+        checklist_coverage: {L0: boolean, L1: boolean, L2: boolean, L3: boolean, L4: boolean,
+          L5: boolean, L6: boolean, L7: boolean, house_style: boolean, L8: boolean}
+        why_not_resolved: string
+        status: [escalated]
 
   - id: change-report
     produced_by: [revise-prose, revise-structure, adapt-to-reader, compare-versions]
@@ -138,6 +184,7 @@ contracts:
       meaning_preserved: boolean
       role_reference_integrity: boolean  # no orphaned referent, no inverted agent/patient
       technical_precision_held: boolean
+      decision_record: decision-record   # see the decision-record contract above
       validation_warnings: [string]      # from revision-comparator
       recommended_next_step: string
 
@@ -146,6 +193,16 @@ contract_flow:
   - build-argument -> argument-blueprint -> test-argument / draft-prose / shape-and-close
   - diagnose-draft / reviewers -> defect-report -> revise-* / finalize
   - revise-* / compare-versions -> change-report -> finalize / teach
-  - review-orchestrator merges many single-lens defect-reports -> one defect-report
+  - review-orchestrator merges many single-lens defect-reports -> one defect-report,
+    reconciling their decision_record.methodology_loaded lists into one deduplicated list
+    rather than dropping the sub-records
+  - every one of the four artifact contracts above carries its own decision_record;
+    it is not a separate handoff and does not need its own routing step
+  - at standard depth and above, red-team-reviewer consumes any defect-report /
+    change-report / reader-frame / argument-blueprint and emits an extended
+    defect-report with full L0-L8 plus house_style coverage; a finding routes back
+    to its owning_stage and red-team-reviewer re-checks, bounded by
+    orchestration/policies/red-team-policy.yaml's max_iterations, else an
+    escalation_report is attached rather than a silent pass
 
 attestation: "no source prose copied; no card ids in public files"

@@ -58,6 +58,11 @@ Produces a **defect-report** on the soundness layer (see
 `severity`, `evidence`, and `recommended_fix`; set `coverage.soundness = true` and
 `exhaustiveness`. Route via `recommended_next_step` (usually revise-structure).
 
+Every run also attaches a `decision_record`: the exact `methodology/<file>.md#<section>`
+references consulted (drawn from References to load below), the checks performed, any
+rule set aside naming its lawful exception, warnings, unresolved questions, and status.
+This cites the project's own methodology only, visible by default, never the source books.
+
 ## Fidelity requirements
 `meaning: strict`. The evaluation must not restate or alter any claim; quote or
 anchor the original wording when citing a defect.
@@ -67,6 +72,12 @@ anchor the original wording when citing a defect.
 - **deep:** route to an independent reviewer and reconcile: self-review misses
   subtle overclaims; reliability materially improves with an isolated second read.
 Depth changes the number of independent passes, not output verbosity.
+
+At standard depth and above, the red-team-reviewer full-checklist compliance gate
+(`GATE-COMPLIANCE`) is mandatory per `orchestration/policies/red-team-policy.yaml`:
+the defect-report is not complete until it reports zero findings across the full
+methodology checklist (L0-L8 plus house style), not only the soundness layer
+above, or the loop escalates after `max_iterations`.
 
 ## Preservation controls
 Nothing is transformed. Strict meaning preservation applies to how defects are

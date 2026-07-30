@@ -89,26 +89,45 @@ stages:
     on_failure: fidelity rollback -> v2
     on_ambiguity: escalate to independent-reviewer
 
+  - id: v5
+    responsibility: >-
+      Audit the revised passage against the complete methodology checklist (L0
+      through L8 plus house style) before the revision is treated as final.
+    execution:
+      type: agent
+      component: red-team-reviewer
+    depends_on: [v4]
+    parallel_with: []
+    input_contract: change-report
+    output_contract: defect-report
+    gate: GATE-COMPLIANCE
+    on_failure: route each finding back to its owning stage per orchestration/policies/red-team-policy.yaml; red-team-reviewer re-checks, looping up to max_iterations, else escalate
+    on_ambiguity: treat an unmentioned checklist level as a gap to investigate, never as a pass
+
 completion_conditions:
   - relation between adjacent sentences inferable
   - topic continuity holds
   - meaning and qualifiers preserved
+  - the full checklist (L0-L8 plus house style) checked before the revision is final
 failure_conditions:
   - a connective that misstates the real relation
   - papering over a structural gap with prose
   - a rewrite that inverts a role or drops a referent
+  - a red-team finding silently dropped to force a pass
 quality_metrics:
   - coherence-marker coverage
   - qualifier-set equality
   - referents resolvable
+  - checklist coverage = 10/10 (L0-L8 plus house style)
 
 notes:
   loops:
-    - fidelity rollback: v4 blocks -> v2; exit is a passing fidelity gate (terminal)
+    - fidelity rollback: v4 blocks -> v2; exit is a passing fidelity gate advancing to v5
+    - "red-team loop: v5 finding -> re-enter its owning stage, up to red-team-policy.yaml's max_iterations, else escalate; exit is a passing compliance gate (terminal)"
   escalations:
     - v1/v3 prose-to-structure -> restructure (transition, not a new workflow)
     - v4 residual role/sense doubt -> independent-reviewer
-  terminal: v4
+  terminal: v5
   reachable_completion: true
 
 attestation: "no source prose copied; no card ids in public files"

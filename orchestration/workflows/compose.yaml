@@ -154,6 +154,23 @@ stages:
     on_ambiguity: escalate the unresolved same-passage conflict; request preservation_intent if unstated
     depth_gated: deep
 
+  - id: c8
+    responsibility: >-
+      Audit the finished document against the complete methodology checklist (L0
+      through L8 plus house style) before it is treated as final: runs after c6 at
+      standard depth, after c7 (the independent-review reconciliation) when deep
+      depth added it. Never trusts c6's or c7's own coverage claim.
+    execution:
+      type: agent
+      component: red-team-reviewer
+    depends_on: [c6]
+    parallel_with: []
+    input_contract: argument-blueprint
+    output_contract: defect-report
+    gate: GATE-COMPLIANCE
+    on_failure: route each finding back to its owning stage per orchestration/policies/red-team-policy.yaml; red-team-reviewer re-checks, looping up to max_iterations, else escalate
+    on_ambiguity: treat an unmentioned checklist level as a gap to investigate, never as a pass
+
 completion_conditions:
   - reader-frame settled before any content decision
   - structure and soundness gates passed before drafting
@@ -161,6 +178,7 @@ completion_conditions:
   - meaning and qualifiers preserved through revision under the fidelity gate
   - apparatus density set with reference to genre and read-mode, and the ending designed
   - drafted prose is dash-free and in the expert-human register per the house style
+  - the full checklist (L0-L8 plus house style) checked before the document is final
 
 failure_conditions:
   - drafting started before the structure and soundness gates pass
@@ -168,6 +186,7 @@ failure_conditions:
   - a revision that inverts a role, drops a referent, or shifts a claim
   - a dash used as punctuation, or LLM-register tics, surviving into the draft
   - apparatus set without reference to genre or read-mode
+  - a red-team finding silently dropped to force a pass
 
 quality_metrics:
   - node coverage of drafted prose
@@ -175,6 +194,7 @@ quality_metrics:
   - qualifier-set equality across revision
   - apparatus-density value present
   - dash-free draft (no em/en dash as punctuation)
+  - checklist coverage = 10/10 (L0-L8 plus house style)
 
 notes:
   output_contract_note: >-
@@ -191,14 +211,15 @@ notes:
     - structure-gate loop: c2 self-loops on GATE-STRUCTURE block; exit is a passing structure gate advancing to c3
     - soundness loop: c3 blocks route back to c2; exit is a passing soundness gate advancing to c4
     - fidelity rollback: c5 blocks re-draft the passage under c5; exit is a passing fidelity gate advancing to c6
+    - "red-team loop: c8 finding -> re-enter its owning stage, up to red-team-policy.yaml's max_iterations, else escalate; exit is a passing compliance gate (terminal)"
   escalations:
     - c5 prose-to-structure -> restructure (transition, not a new workflow)
     - c7 blocking defects -> re-enter at their owning stage (c2 structure, c5 prose)
   depth:
-    standard: c1..c6; terminal c6
-    deep: adds c7 (independent-review reconciliation); terminal c7
-    audit: documented handoff to finalize (WF-FINALIZE) after c6, not a stage here
-  terminal: c6 at standard depth; c7 at deep depth
+    standard: c1..c6, c8; terminal c8
+    deep: adds c7 (independent-review reconciliation) before c8; terminal c8
+    audit: documented handoff to finalize (WF-FINALIZE) after c8, not a stage here
+  terminal: c8
   reachable_completion: true
 
 attestation: "no source prose copied; no card ids in public files"

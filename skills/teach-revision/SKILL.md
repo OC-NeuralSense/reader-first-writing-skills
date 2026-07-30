@@ -63,6 +63,11 @@ and principle, with the before/after of the edit. Each move maps to a change-rep
 (see `architecture/handoff-contracts.yaml`): classification, meaning-preservation, and the named
 principle. The learner receives both the improved draft and the reusable tests.
 
+Every run also attaches a `decision_record`: the exact `methodology/<file>.md#<section>`
+references consulted (drawn from References to load below), the checks performed, any
+rule set aside naming its lawful exception, warnings, unresolved questions, and status.
+This cites the project's own methodology only, visible by default, never the source books.
+
 ## Fidelity requirements
 Every taught move is still a transformation, so the fidelity invariant holds in full: claims,
 evidence, numbers, dates, names, negations, modality, conditions, exceptions, qualifications,
@@ -73,6 +78,12 @@ within the learner's envelope; the goal is their capability, not a rewrite in an
 ## Depth modes
 - **teaching:** the staged defect + test + rationale mode above. This is the only mode; teaching
   is the point, so there is no silent-fix shortcut.
+
+The red-team-reviewer full-checklist compliance gate (`GATE-COMPLIANCE`) is
+mandatory per `orchestration/policies/red-team-policy.yaml`, including L8's
+self-consistency check that the guidance obeys the rule it teaches: the staged
+revision is not complete until it reports zero findings across the full
+methodology checklist, or the loop escalates after `max_iterations`.
 
 ## Failure handling
 - The draft has too many faults to teach at once -> teach the few highest-leverage moves, name the

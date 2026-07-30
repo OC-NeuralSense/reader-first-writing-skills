@@ -108,3 +108,168 @@ test('both agents declare the authority order and adversarial-input handling', (
       `${agent} handles adversarial input`);
   }
 });
+
+test('every skill wires a visible decision_record into its output contract', () => {
+  const skills = [
+    'adapt-to-reader', 'build-argument', 'compare-versions', 'diagnose-draft',
+    'draft-prose', 'frame-the-brief', 'review-document', 'revise-prose',
+    'revise-structure', 'shape-and-close', 'teach-revision', 'test-argument',
+  ];
+  for (const skill of skills) {
+    const text = readFileSync(join(ROOT, 'skills', skill, 'SKILL.md'), 'utf8');
+    assert.ok(text.includes('`decision_record`'), `${skill} attaches a decision_record`);
+    assert.ok(text.includes('methodology/<file>.md#<section>'),
+      `${skill} cites methodology by file and section`);
+    assert.ok(text.includes('never the source books'),
+      `${skill} states the decision_record never cites the source books`);
+  }
+});
+
+test('both agents wire decision_record into their produced defect-report', () => {
+  for (const agent of ['independent-reviewer', 'review-orchestrator']) {
+    const md = readFileSync(join(ROOT, 'agents', `${agent}.md`), 'utf8');
+    assert.ok(md.includes('decision_record'), `${agent}.md attaches a decision_record`);
+    const spec = yaml.load(readFileSync(join(ROOT, 'orchestration', 'agents', `${agent}.yaml`), 'utf8'));
+    assert.ok(spec.produces.some((p) => p.includes('decision_record')),
+      `${agent}.yaml declares decision_record among what it produces`);
+  }
+});
+
+test('the four handoff contracts and their JSON schemas all carry decision_record', () => {
+  const contracts = yaml.load(readFileSync(join(ROOT, 'architecture', 'handoff-contracts.yaml'), 'utf8'));
+  const named = ['reader-frame', 'argument-blueprint', 'defect-report', 'change-report'];
+  for (const id of named) {
+    const contract = contracts.contracts.find((c) => c.id === id);
+    assert.ok(contract, `${id} contract exists`);
+    assert.ok('decision_record' in contract.schema, `${id} schema carries decision_record`);
+
+    const schemaPath = join(ROOT, 'orchestration', 'schemas', `${id}.schema.json`);
+    const schema = JSON.parse(readFileSync(schemaPath, 'utf8'));
+    assert.ok(schema.properties.decision_record, `${id}.schema.json defines decision_record`);
+    assert.ok(schema.required.includes('decision_record'),
+      `${id}.schema.json requires decision_record`);
+  }
+  assert.ok(contracts.contracts.some((c) => c.id === 'decision-record'),
+    'a decision-record contract is defined');
+});
+
+test('every gate cites the methodology it applies, or names why it cannot', () => {
+  const gates = ['structure', 'fidelity', 'release', 'routing', 'soundness', 'clarity', 'compliance'];
+  for (const gate of gates) {
+    const spec = yaml.load(readFileSync(join(ROOT, 'orchestration', 'gates', `${gate}.yaml`), 'utf8'));
+    assert.ok(Array.isArray(spec.cites), `${gate} gate declares cites[]`);
+    assert.equal(spec.cites.length, spec.pass_criteria.length,
+      `${gate} gate has one cites[] entry per pass_criteria bullet`);
+    for (const cite of spec.cites) {
+      const ok = cite.includes('.md#') || cite.startsWith('no methodology anchor');
+      assert.ok(ok, `${gate} gate cite "${cite}" is a methodology anchor or an explicit non-anchor note`);
+    }
+  }
+});
+
+test('GATE-COMPLIANCE checks all ten checklist levels and GATE-RELEASE requires it green', () => {
+  const compliance = yaml.load(readFileSync(join(ROOT, 'orchestration', 'gates', 'compliance.yaml'), 'utf8'));
+  assert.equal(compliance.id, 'GATE-COMPLIANCE');
+  assert.equal(compliance.pass_criteria.length, 10, 'one bullet per L0-L8 plus house style');
+  assert.ok(compliance.cites.every((c) => c.startsWith('methodology/checklists.md#')),
+    'every GATE-COMPLIANCE cite points at the master checklist index');
+
+  const release = yaml.load(readFileSync(join(ROOT, 'orchestration', 'gates', 'release.yaml'), 'utf8'));
+  const releaseText = readFileSync(join(ROOT, 'orchestration', 'gates', 'release.yaml'), 'utf8');
+  assert.ok(releaseText.includes('COMPLIANCE gate'), 'GATE-RELEASE requires GATE-COMPLIANCE green');
+  assert.ok(release.pass_criteria.some((c) => c.includes('COMPLIANCE')),
+    'GATE-RELEASE pass_criteria names the compliance requirement');
+});
+
+test('the red-team-policy declares a bounded loop with an honest escalation shape', () => {
+  const policy = yaml.load(readFileSync(join(ROOT, 'orchestration', 'policies', 'red-team-policy.yaml'), 'utf8'));
+  assert.equal(policy.gate, 'orchestration/gates/compliance.yaml');
+  assert.ok(typeof policy.max_iterations === 'number' && policy.max_iterations > 0,
+    'max_iterations is a positive bound, never unbounded');
+  const ids = policy.requirements.map((r) => r.id);
+  for (const required of [
+    'REDTEAM.MANDATORY_AT_STANDARD_AND_ABOVE',
+    'REDTEAM.QUICK_IS_EXEMPT',
+    'REDTEAM.FULL_CHECKLIST_SCOPE',
+    'REDTEAM.ADVERSARIAL_DEFAULT',
+    'REDTEAM.BOUNDED_LOOP',
+    'REDTEAM.ESCALATE_NEVER_FAKE_PASS',
+    'REDTEAM.NO_RUNTIME_BOOK_DEPENDENCY',
+  ]) {
+    assert.ok(ids.includes(required), `${required} present`);
+  }
+  const shape = policy.escalation_report_shape;
+  for (const field of ['artifact', 'iterations_run', 'max_iterations', 'remaining_findings', 'checklist_coverage', 'why_not_resolved', 'status']) {
+    assert.ok(field in shape, `escalation_report_shape carries ${field}`);
+  }
+});
+
+test('red-team-reviewer exists, is read-only, full-checklist scoped, and never depends on the books', () => {
+  const md = readFileSync(join(ROOT, 'agents', 'red-team-reviewer.md'), 'utf8');
+  assert.ok(md.includes('methodology/checklists.md'), 'reads the full checklist, not a lens subset');
+  assert.ok(md.includes('never reference the private source books') || md.includes('never reads or references the private') || md.toLowerCase().includes('never reference') || md.toLowerCase().includes('never read'),
+    'explicitly states it never reads the private source books');
+  assert.ok(detectDashPunctuation(md).length === 0, 'red-team-reviewer.md is dash-free');
+
+  const spec = yaml.load(readFileSync(join(ROOT, 'orchestration', 'agents', 'red-team-reviewer.yaml'), 'utf8'));
+  assert.equal(spec.name, 'red-team-reviewer');
+  assert.deepEqual(spec.allowed_tools, ['read', 'search'], 'read-only, same as independent-reviewer');
+  assert.ok(spec.disallowed_tools.includes('edit') && spec.disallowed_tools.includes('write'));
+  assert.equal(spec.authority.non_negotiable, true);
+  assert.equal(spec.authority.constitution, 'methodology/constitution/writing-constitution.md');
+  assert.equal(spec.loop_policy, 'orchestration/policies/red-team-policy.yaml');
+  const levels = ['L0', 'L1', 'L2', 'L3', 'L4', 'L5', 'L6', 'L7', 'house_style', 'L8'];
+  for (const level of levels) {
+    assert.ok(level in spec.checklist_scope, `checklist_scope declares ${level}`);
+  }
+});
+
+test('every skill states the red-team compliance gate is mandatory', () => {
+  const skills = [
+    'adapt-to-reader', 'build-argument', 'compare-versions', 'diagnose-draft',
+    'draft-prose', 'frame-the-brief', 'review-document', 'revise-prose',
+    'revise-structure', 'shape-and-close', 'teach-revision', 'test-argument',
+  ];
+  for (const skill of skills) {
+    const text = readFileSync(join(ROOT, 'skills', skill, 'SKILL.md'), 'utf8');
+    assert.ok(text.includes('red-team-reviewer') || text.includes('GATE-COMPLIANCE'),
+      `${skill} names the red-team compliance gate`);
+    assert.ok(text.includes('red-team-policy.yaml'), `${skill} references the loop policy`);
+  }
+});
+
+test('both existing agents state their output is itself subject to GATE-COMPLIANCE', () => {
+  for (const agent of ['independent-reviewer', 'review-orchestrator']) {
+    const md = readFileSync(join(ROOT, 'agents', `${agent}.md`), 'utf8');
+    assert.ok(md.includes('GATE-COMPLIANCE'), `${agent}.md names GATE-COMPLIANCE`);
+    const spec = yaml.load(readFileSync(join(ROOT, 'orchestration', 'agents', `${agent}.yaml`), 'utf8'));
+    assert.ok(typeof spec.subject_to_gate === 'string' && spec.subject_to_gate.includes('GATE-COMPLIANCE'),
+      `${agent}.yaml declares subject_to_gate`);
+  }
+});
+
+test('every non-quick workflow wires red-team-reviewer and GATE-COMPLIANCE; quick documents its exemption', () => {
+  const wired = ['compose', 'deep-review', 'finalize', 'plan', 'restructure', 'revise', 'teach'];
+  for (const wf of wired) {
+    const spec = yaml.load(readFileSync(join(ROOT, 'orchestration', 'workflows', `${wf}.yaml`), 'utf8'));
+    const components = spec.stages.map((s) => s.execution && s.execution.component);
+    assert.ok(components.includes('red-team-reviewer'), `${wf}.yaml has a red-team-reviewer stage`);
+    const gates = spec.stages.map((s) => s.gate).join(' ');
+    assert.ok(gates.includes('GATE-COMPLIANCE'), `${wf}.yaml has a stage gated on GATE-COMPLIANCE`);
+  }
+  const quickSpec = yaml.load(readFileSync(join(ROOT, 'orchestration', 'workflows', 'quick.yaml'), 'utf8'));
+  const quickComponents = quickSpec.stages.map((s) => s.execution && s.execution.component);
+  assert.ok(!quickComponents.includes('red-team-reviewer'), 'quick-pass has no red-team-reviewer stage');
+  const quickText = readFileSync(join(ROOT, 'orchestration', 'workflows', 'quick.yaml'), 'utf8');
+  assert.ok(quickText.includes('REDTEAM.QUICK_IS_EXEMPT'), 'quick-pass documents its exemption by rule id');
+});
+
+test('defect-report coverage and escalation_report accept full-checklist keys', () => {
+  const schema = JSON.parse(readFileSync(join(ROOT, 'orchestration', 'schemas', 'defect-report.schema.json'), 'utf8'));
+  const levels = ['L0', 'L1', 'L2', 'L3', 'L4', 'L5', 'L6', 'L7', 'house_style', 'L8'];
+  for (const level of levels) {
+    assert.ok(schema.properties.coverage.properties[level], `coverage accepts ${level}`);
+  }
+  assert.ok(schema.properties.escalation_report, 'schema defines an optional escalation_report');
+  assert.ok(!schema.required.includes('escalation_report'), 'escalation_report is optional, not required on every report');
+});

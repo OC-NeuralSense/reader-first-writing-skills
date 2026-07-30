@@ -66,6 +66,11 @@ including claims, groups, `answer_placement`, `opening_plan`, `drop_list`, and
 `validation_warnings`. Leave `closing_plan`, `apparatus_density`, and `layout_map`
 for shape-and-close.
 
+Every run also attaches a `decision_record`: the exact `methodology/<file>.md#<section>`
+references consulted (drawn from References to load below), the checks performed, any
+rule set aside naming its lawful exception, warnings, unresolved questions, and status.
+This cites the project's own methodology only, visible by default, never the source books.
+
 ## Fidelity requirements
 Meaning-preserving: re-grouping or re-summarizing must not alter what a note claims.
 Every qualifier and scope limit in a source note survives into its placed claim.
@@ -74,6 +79,12 @@ Every qualifier and scope limit in a source note survives into its placed claim.
 - **standard:** one build pass with its own grouping/ordering/soundness self-check.
 - **deep:** a second independent pass over grouping and soundness before emitting.
 Depth changes the number of validation passes, not output verbosity.
+
+At standard depth and above, the red-team-reviewer full-checklist compliance gate
+(`GATE-COMPLIANCE`) is mandatory per `orchestration/policies/red-team-policy.yaml`:
+the argument-blueprint is not complete until it reports zero findings across the
+full methodology checklist (L0-L8 plus house style), or the loop escalates after
+`max_iterations`.
 
 ## Preservation controls
 `meaning: preserving`, `voice: open`. Claims may be reworded for a label, never

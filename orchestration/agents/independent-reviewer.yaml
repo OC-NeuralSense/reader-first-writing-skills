@@ -33,8 +33,14 @@ disallowed_tools: [edit, write, notebook_edit, network_web, spawn_task]
 
 produces:
   - defect-report (single lens, independent_review=true, exhaustive for its lens)
+  - decision_record (embedded in the defect-report; methodology sections applied, checks
+    performed, rules set aside, visible to the user by default, never a book reference)
 
 handoff_schema: defect-report
+
+subject_to_gate: >-
+  GATE-COMPLIANCE, at standard depth and above (orchestration/policies/red-team-policy.yaml).
+  This report's own coverage claim is verified by red-team-reviewer, not inherited.
 
 fidelity_invariant: >-
   Supreme and lens-independent. Any altered claim, evidence, number, date, name,

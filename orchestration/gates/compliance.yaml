@@ -1,0 +1,45 @@
+name: full-checklist compliance
+id: GATE-COMPLIANCE
+purpose: >-
+  Confirm a finished artifact was checked against the COMPLETE methodology
+  checklist, not only the structure/prose/soundness lenses. Closes the gap those
+  three lenses leave open: house style, most word choice, all length and rhythm,
+  half of sentence-internal grammar, section apparatus, and cross-cutting
+  usage-judgment and process items.
+applies_after: review-document, independent-reviewer, review-orchestrator, red-team-reviewer
+owner: red-team-reviewer
+indicators_from: [outline-validator, prose-analyzer, revision-comparator]
+pass_criteria:
+  - L0 situation checks hold (reader model, aim, genre, blind-spot sweep, emitted reader-frame)
+  - L1 whole-document checks hold (problem framing, governing question, hierarchy, grouping, faithful summary)
+  - L2 section checks hold (contentful headings, apparatus density fits genre and read-mode, real section joints)
+  - L3 paragraph checks hold (topic sentences are faithful summaries, breaks fall at genuine joints)
+  - L4 sentence-sequence checks hold (topic continuity, given-before-new, reference and coherence-relation marking)
+  - L5 sentence-internal checks hold (parsing load, end-weight, AND the grammar/punctuation-mechanics half: agreement, government, pronoun case, comma splices, restrictive/non-restrictive punctuation, serial comma, apostrophes, quotation marks)
+  - L6 word checks hold (concreteness, jargon calibration, denominalization, euphemism/directness, cliche, hedge/padding discipline)
+  - L7 length-and-rhythm checks hold (sentence-length variance, paragraph as rest point, elaboration only where the problem occurs)
+  - house-style checks hold (no em or en dash as punctuation, expert-human register, no robotic or LLM-tell phrasing)
+  - L8 cross-cutting checks hold (fidelity, diagnosis/correction separation, usage-judgment battery, teaching self-consistency where applicable)
+cites:  # methodology/checklists.md#<level>, the master index anchor for each pass_criteria bullet above
+  - methodology/checklists.md#l0-situation-reader-purpose-genre
+  - methodology/checklists.md#l1-whole-document-problem-question-hierarchy
+  - methodology/checklists.md#l2-section
+  - methodology/checklists.md#l3-paragraph
+  - methodology/checklists.md#l4-sentence-sequence
+  - methodology/checklists.md#l5-sentence-internal
+  - methodology/checklists.md#l6-word
+  - methodology/checklists.md#l7-length-and-rhythm
+  - methodology/checklists.md#house-style-dash-free-punctuation-expert-human-voice
+  - methodology/checklists.md#l8-cross-cutting
+fail_action: >-
+  route every finding back to its owning_stage per orchestration/policies/red-team-policy.yaml;
+  red-team-reviewer re-checks after the fix; repeat up to max_iterations; if findings remain,
+  stop and escalate with the full remaining list, never silently pass.
+severity: blocking
+independent_review: mandatory at standard depth and above; quick depth is explicitly exempt and
+  stays labeled non-exhaustive, exactly as diagnose-draft's quick mode already is.
+note: >-
+  This gate does not read the private source books; methodology/checklists.md is the
+  complete, independently-written, already-public operational index of what those books
+  taught. The FIDELITY gate remains supreme and overrides this gate whenever satisfying a
+  compliance finding would alter meaning.

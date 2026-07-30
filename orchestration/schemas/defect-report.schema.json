@@ -86,12 +86,22 @@
     },
     "coverage": {
       "type": "object",
-      "description": "Which layers this report actually examined.",
+      "description": "Which layers this report actually examined. The lens keys (structure/prose/soundness/reader_fit) are required of every report; the checklist-level keys (L0-L8, house_style) are populated only by a full-checklist pass (red-team-reviewer) and are optional elsewhere.",
       "properties": {
         "structure": { "type": "boolean" },
         "prose": { "type": "boolean" },
         "soundness": { "type": "boolean" },
-        "reader_fit": { "type": "boolean" }
+        "reader_fit": { "type": "boolean" },
+        "L0": { "type": "boolean", "description": "Situation: reader, purpose, genre." },
+        "L1": { "type": "boolean", "description": "Whole-document: problem, question, hierarchy." },
+        "L2": { "type": "boolean", "description": "Section: apparatus, contentful headings." },
+        "L3": { "type": "boolean", "description": "Paragraph: topic sentences, genuine breaks." },
+        "L4": { "type": "boolean", "description": "Sentence sequence: coherence, reference, given-before-new." },
+        "L5": { "type": "boolean", "description": "Sentence internal: parsing load plus grammar/punctuation mechanics." },
+        "L6": { "type": "boolean", "description": "Word: concreteness, jargon, denominalization, cliche." },
+        "L7": { "type": "boolean", "description": "Length and rhythm." },
+        "house_style": { "type": "boolean", "description": "Dash-free punctuation, expert-human register, no LLM tells." },
+        "L8": { "type": "boolean", "description": "Cross-cutting: fidelity, diagnosis/correction separation, usage judgment." }
       },
       "required": ["structure", "prose", "soundness", "reader_fit"],
       "additionalProperties": false
@@ -101,12 +111,71 @@
       "description": "A quick pass is non_exhaustive by contract.",
       "enum": ["exhaustive", "non_exhaustive"]
     },
+    "decision_record": {
+      "type": "object",
+      "description": "The visible evidence trail: which methodology sections were consulted and which checks ran. Cites methodology/*.md by file and section only, never a book title, author name, or locator.",
+      "properties": {
+        "artifact": { "type": "string" },
+        "methodology_loaded": {
+          "type": "array",
+          "description": "methodology/<file>.md#<section> references, one per rule actually applied.",
+          "items": { "type": "string" }
+        },
+        "checks_performed": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "rules_set_aside": {
+          "type": "array",
+          "description": "Each entry names the lawful exception used.",
+          "items": { "type": "string" }
+        },
+        "warnings": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "unresolved_questions": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "status": {
+          "type": "string",
+          "enum": ["approved", "escalated", "no_change_needed"]
+        }
+      },
+      "required": ["artifact", "methodology_loaded", "checks_performed", "status"],
+      "additionalProperties": false
+    },
     "validation_warnings": {
       "type": "array",
       "items": { "type": "string" }
     },
     "recommended_next_step": {
       "type": "string"
+    },
+    "escalation_report": {
+      "type": "object",
+      "description": "Attached only when the red-team compliance loop reached max_iterations with findings still remaining (orchestration/policies/red-team-policy.yaml). Never a silent pass.",
+      "properties": {
+        "artifact": { "type": "string" },
+        "iterations_run": { "type": "integer" },
+        "max_iterations": { "type": "integer" },
+        "remaining_findings": { "type": "array", "items": { "type": "object" } },
+        "checklist_coverage": {
+          "type": "object",
+          "properties": {
+            "L0": { "type": "boolean" }, "L1": { "type": "boolean" }, "L2": { "type": "boolean" },
+            "L3": { "type": "boolean" }, "L4": { "type": "boolean" }, "L5": { "type": "boolean" },
+            "L6": { "type": "boolean" }, "L7": { "type": "boolean" },
+            "house_style": { "type": "boolean" }, "L8": { "type": "boolean" }
+          },
+          "additionalProperties": false
+        },
+        "why_not_resolved": { "type": "string" },
+        "status": { "type": "string", "enum": ["escalated"] }
+      },
+      "required": ["artifact", "iterations_run", "max_iterations", "remaining_findings", "checklist_coverage", "why_not_resolved", "status"],
+      "additionalProperties": false
     }
   },
   "required": [
@@ -118,6 +187,7 @@
     "findings",
     "coverage",
     "exhaustiveness",
+    "decision_record",
     "validation_warnings",
     "recommended_next_step"
   ],

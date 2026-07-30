@@ -77,17 +77,36 @@ stages:
     on_failure: request a re-review of the disputed passage
     on_ambiguity: escalate the unresolved same-passage structure-vs-prose conflict with the trade-off stated
 
+  - id: d4
+    responsibility: >-
+      Audit the merged report against the complete methodology checklist (L0
+      through L8 plus house style), not only the three lenses just reconciled;
+      never trust d3's own coverage claim.
+    execution:
+      type: agent
+      component: red-team-reviewer
+    depends_on: [d3]
+    parallel_with: []
+    input_contract: defect-report
+    output_contract: defect-report
+    gate: GATE-COMPLIANCE
+    on_failure: route each finding back to its owning stage per orchestration/policies/red-team-policy.yaml; red-team-reviewer re-checks, looping up to max_iterations, else escalate
+    on_ambiguity: treat an unmentioned checklist level as a gap to investigate, never as a pass
+
 completion_conditions:
   - structure, prose, and soundness layers each covered
   - independent findings reconciled into one report
   - conflicts surfaced, not averaged
+  - the full checklist (L0-L8 plus house style) checked by red-team-reviewer, not only the three lenses
 failure_conditions:
   - a single perspective masquerading as multi-perspective
   - unresolved same-passage conflicts silently decided
+  - a red-team finding silently dropped to force a pass
 quality_metrics:
   - layer coverage = 3/3
   - escalations logged
   - reviewer-independence = true
+  - checklist coverage = 10/10 (L0-L8 plus house style)
 
 notes:
   parallelism: >-
@@ -97,8 +116,9 @@ notes:
     graph, no extra workflow.
   loops:
     - d2 lens failure -> re-run that lens; exit is full lens coverage advancing to d3
-    - d3 disputed passage -> re-review; exit is a passing routing gate (terminal)
-  terminal: d3
+    - d3 disputed passage -> re-review; exit is a passing routing gate advancing to d4
+    - "red-team loop: d4 finding -> re-enter its owning stage, up to red-team-policy.yaml's max_iterations, else escalate; exit is a passing compliance gate (terminal)"
+  terminal: d4
   reachable_completion: true
 
 attestation: "no source prose copied; no card ids in public files"

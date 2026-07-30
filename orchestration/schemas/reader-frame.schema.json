@@ -79,6 +79,41 @@
       "description": "How firmly the reader-and-situation model is grounded.",
       "enum": ["low", "medium", "high"]
     },
+    "decision_record": {
+      "type": "object",
+      "description": "The visible evidence trail: which methodology sections were consulted and which checks ran. Cites methodology/*.md by file and section only, never a book title, author name, or locator.",
+      "properties": {
+        "artifact": { "type": "string" },
+        "methodology_loaded": {
+          "type": "array",
+          "description": "methodology/<file>.md#<section> references, one per rule actually applied.",
+          "items": { "type": "string" }
+        },
+        "checks_performed": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "rules_set_aside": {
+          "type": "array",
+          "description": "Each entry names the lawful exception used.",
+          "items": { "type": "string" }
+        },
+        "warnings": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "unresolved_questions": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "status": {
+          "type": "string",
+          "enum": ["approved", "escalated", "no_change_needed"]
+        }
+      },
+      "required": ["artifact", "methodology_loaded", "checks_performed", "status"],
+      "additionalProperties": false
+    },
     "validation_warnings": {
       "type": "array",
       "items": { "type": "string" }
@@ -96,6 +131,7 @@
     "document_length",
     "uncertainty_bias",
     "clarification_needed",
+    "decision_record",
     "validation_warnings",
     "recommended_next_step"
   ],

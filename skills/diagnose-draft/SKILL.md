@@ -91,6 +91,11 @@ and an `exhaustiveness` flag. This report is the only artifact written, and it
 feeds **revise-structure** / **revise-prose** / **teach-revision**. Written via
 Write to a report file -- the user's draft is never modified.
 
+Every run also attaches a `decision_record`: the exact `methodology/<file>.md#<section>`
+references consulted (drawn from References to load below), the checks performed, any
+rule set aside naming its lawful exception, warnings, unresolved questions, and status.
+This cites the project's own methodology only, visible by default, never the source books.
+
 ## Fidelity requirements
 Not applicable -- this skill changes nothing. Its integrity rule is the mirror
 of fidelity: it must not alter the draft at all. It holds **no Edit** capability
@@ -102,6 +107,13 @@ on the user's draft by design; the only thing it writes is its own defect-report
 - **standard** -- full two-layer audit with its own coverage note.
 - **deep** -- routes to an independent-reviewer agent (reliability materially
   improves with blind review); merges the independent findings into one report.
+
+At standard depth and above, the red-team-reviewer full-checklist compliance gate
+(`GATE-COMPLIANCE`) is mandatory per `orchestration/policies/red-team-policy.yaml`:
+the defect-report is not complete until it reports zero findings across the full
+methodology checklist (L0-L8 plus house style), not only the structure/prose
+layers above, or the loop escalates after `max_iterations`. quick depth stays
+exempt and explicitly non-exhaustive, exactly as today.
 
 ## Preservation controls
 Meaning: not applicable (no transformation). The draft is read-only to this

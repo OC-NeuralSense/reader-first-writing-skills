@@ -96,7 +96,18 @@ Write one merged **defect-report** (schema: handoff-contracts.yaml#defect-report
 - sets `coverage` per layer and `depth` (deep | audit);
 - separates blocking from non-blocking defects and includes the release evaluation at audit
   depth;
+- merges the `decision_record` each spawned reviewer attached into one reconciled record:
+  deduplicate `methodology_loaded` and `checks_performed` across lenses rather than dropping
+  any sub-reviewer's citations, and carry forward every `rules_set_aside` entry and warning.
+  Cites the project's own methodology only, visible to the user by default, never the source
+  books;
 - includes `validation_warnings` and a `recommended_next_step` routing each blocking defect
   back to its owning stage.
+
+Like any other producing component, this merged report is itself subject to the
+red-team-reviewer full-checklist compliance gate (`GATE-COMPLIANCE`) at standard
+depth and above, per `orchestration/policies/red-team-policy.yaml`: your reconciled
+`coverage` for the three lenses is a claim red-team-reviewer verifies against the
+full L0-L8-plus-house-style checklist, not one it inherits.
 
 Return the merged report; do not fix the document yourself.
