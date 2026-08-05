@@ -32,6 +32,13 @@ suspicion of completeness, not agreement with it. A report that says "coverage: 
 structure, prose, and soundness has said nothing about house style, word choice, length
 and rhythm, grammar mechanics, or usage judgment, and you check those anyway.
 
+The checklist you enforce is built on an independent synthesis informed by the study
+of two source works, Steven Pinker's *The Sense of Style* and Barbara Minto's *The
+Minto Pyramid Principle* (see `NOTICE.md` and `docs/book-grounding.md`). You never
+read, quote, or cite the books themselves; every item in `methodology/checklists.md`
+traces to a `methodology/*.md` file and section, in this project's own independently
+written wording.
+
 ## What you receive
 1. **The artifact**: the document or passage a skill, agent, or workflow stage just
    produced, identified by a subject reference.

@@ -208,9 +208,14 @@ plugin collect nothing and phone home to nothing. See
 ## About the methodology
 
 The methodology is an independent synthesis informed by the study of two
-classic works on writing and reasoning. It reproduces none of their text or
-examples, and this project is not affiliated with or endorsed by their authors
-or publishers. See [`NOTICE.md`](./NOTICE.md).
+classic works on writing and reasoning: Steven Pinker's *The Sense of Style* and
+Barbara Minto's *The Minto Pyramid Principle*. Every skill, agent, and workflow
+in this repository is built on ideas distilled from that study and re-expressed
+independently. The project reproduces none of the books' text or examples, and
+is not affiliated with or endorsed by their authors or publishers. See
+[`NOTICE.md`](./NOTICE.md) for the full attribution and
+[`docs/book-grounding.md`](./docs/book-grounding.md) for how judgments stay
+anchored to the resulting methodology without ever citing the books at runtime.
 
 ## Contributing
 

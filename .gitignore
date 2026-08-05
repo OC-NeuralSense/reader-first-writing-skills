@@ -46,6 +46,14 @@ Thumbs.db
 *.swp
 *~
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Local agent-harness / tool state — machine-local, never part of the shipped
+# system. Never tracked; listed explicitly so nothing here is committed by
+# accident.
+# ─────────────────────────────────────────────────────────────────────────────
+.claude/
+.claude-flow/
+
 # Allow synthetic test fixtures explicitly (they are NOT real book content).
 # These are tiny hand-made EPUB/PDF files created for the repo.
 !tests/fixtures/**

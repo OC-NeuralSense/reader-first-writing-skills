@@ -1,7 +1,9 @@
 # Book Grounding: How the System Stays Anchored
 
-The writing intelligence in this project is an independent synthesis informed
-by the project author's study of two source works, acknowledged by title in
+The writing intelligence in this project, and every skill and agent built on
+top of it, is an independent synthesis informed by the project author's study
+of two source works: Steven Pinker's *The Sense of Style* and Barbara Minto's
+*The Minto Pyramid Principle*, also acknowledged by title in
 [`NOTICE.md`](../NOTICE.md). The books themselves are not distributed, quoted,
 or loaded at runtime; the complete operational methodology was written
 independently and lives in [`methodology/`](../methodology/). This document

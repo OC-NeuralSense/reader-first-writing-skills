@@ -1,10 +1,14 @@
 # The Agent System
 
-The system defines exactly **two** agents. That number is a deliberate result of
-a proliferation test, not a starting point. This page explains what the two
-agents do, why no more are justified, the contracts they exchange, the gates they
-answer to, and how the whole arrangement degrades gracefully on platforms without
-native sub-agents.
+The system defines exactly **two** review agents. That number is a deliberate
+result of a proliferation test, not a starting point. Their rubrics, like every
+skill in this repository, are built on an independent synthesis informed by the
+study of two source works, Steven Pinker's *The Sense of Style* and Barbara
+Minto's *The Minto Pyramid Principle* (see [`NOTICE.md`](../NOTICE.md) and
+[Book grounding](./book-grounding.md)); the books themselves are never loaded
+or cited at runtime. This page explains what the two agents do, why no more are
+justified, the contracts they exchange, the gates they answer to, and how the
+whole arrangement degrades gracefully on platforms without native sub-agents.
 
 ---
 
